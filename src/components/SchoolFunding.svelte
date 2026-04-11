@@ -11,24 +11,19 @@
     onMount(() => {
         d3.csv('/data/school_funding.csv').then((data) => {
             
-            // 1. The Narrative Filter: Match the GDIM Dumbbell plot exactly
             const targetCountries = ["United States", "United Kingdom", "Japan", "Norway", "Sweden", "Denmark", "Germany"];
             
-            // Filter the global dataset down to just our story's characters
             let filteredData = data.filter(d => targetCountries.includes(d.country));
 
-            // Parse the strings into numbers
             filteredData.forEach(d => {
                 d.central = +d.central;
                 d.local = +d.local;
             });
 
-            // Sort: US firmly at the top, then sorted by most central funding
             filteredData.sort((a, b) => a.country === "United States" ? -1 : b.country === "United States" ? 1 : a.local - b.local);
 
             chartContainer.innerHTML = '';
 
-            // 2. Fixed Dimensions (Since we only have ~7 countries, we don't need dynamic height anymore)
             const margin = { top: 50, right: 40, bottom: 60, left: 130 };
             const width = 750 - margin.left - margin.right;
             const height = 400 - margin.top - margin.bottom;
@@ -41,11 +36,9 @@
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Setup stack
             const stack = d3.stack().keys(["central", "local"]);
             const stackedData = stack(filteredData);
 
-            // X Axis (0 to 100%)
             const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
@@ -61,7 +54,6 @@
                 .style("fill", "#7f8c8d")
                 .text("Percentage of Total Education Funding");
 
-            // Y Axis (Countries)
             const y = d3.scaleBand()
                 .domain(filteredData.map(d => d.country))
                 .range([0, height])
@@ -72,12 +64,10 @@
                 .attr("font-size", "14px").attr("font-weight", "bold")
                 .style("color", "#2c3e50").select(".domain").remove();
 
-            // Color Palette (Blue for Central, Red for Local to match the US county narrative)
             const color = d3.scaleOrdinal()
                 .domain(["central", "local"])
                 .range(["#3498db", "#e74c3c"]); 
 
-            // Tooltip Handlers
             const handleMouseOver = (event, d, key) => {
                 tooltipOpacity = 1;
                 tooltipX = event.clientX + 15;
@@ -91,7 +81,6 @@
                 d3.select(event.currentTarget).attr("opacity", 1);
             };
 
-            // Draw Bars with Animation
             svg.append("g")
                 .selectAll("g")
                 .data(stackedData)
@@ -112,10 +101,8 @@
                 .duration(800)
                 .attr("width", d => x(d[1]) - x(d[0]));
 
-            // Title and Legend
             svg.append("text").attr("x", -80).attr("y", -25).attr("font-size", "20px").attr("font-weight", "bold").style("fill", "#2c3e50").text("Who Pays for Schools?");
             
-            // Legend
             svg.append("rect").attr("x", width - 260).attr("y", -35).attr("width", 12).attr("height", 12).style("fill", "#3498db");
             svg.append("text").attr("x", width - 240).attr("y", -25).text("Central/Federal").style("font-size", "12px").attr("fill", "#7f8c8d");
             
@@ -144,7 +131,6 @@
 </div>
 
 <style>
-    /* Same CSS as your Dumbbell Plot */
     .chart-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; background-color: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; box-sizing: border-box; }
     .d3-container { width: 100%; flex-grow: 1; }
     .chart-footer { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.85rem; color: #7f8c8d; border-top: 1px solid #ecf0f1; padding-top: 12px; margin-top: 10px; }
