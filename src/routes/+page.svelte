@@ -1,21 +1,34 @@
 <script>
     import { onMount } from 'svelte';
-    import EducationMobility from '../components/EducationMobility.svelte';
     import { fade, fly } from 'svelte/transition';
+    import SchoolFunding from '../components/SchoolFunding.svelte';
 
-    // Svelte 5 Rune to track which section is currently active
     let currentStep = $state(0);
 
-    // Your narrative sections. We can add the new Education data here later.
     const steps = [
-        { id: 0, title: "The Geographic Lottery", content: "For children born into low-income families, their adult economic success is highly dependent on their specific county of birth." },
-        { id: 1, title: "The Missing Link: Education", content: "Why do some countries overcome this lottery? Looking globally, the U.S. has a remarkably high starting point for parental education, but one of the smallest mobility gaps for children compared to Nordic peers." },
-        { id: 2, title: "The Redistribution Gap", content: "Before taxes and transfers, most developed countries have similar levels of market inequality; the primary differentiator is government policy." },
-        { id: 3, title: "What Inequality Costs", content: "High levels of income concentration at the top are strongly associated with lower life expectancies." }
-    ];
+    { 
+        id: 0, 
+        title: "The Geographic Lottery", 
+        content: "For children born into low-income families, their adult economic success is highly dependent on their specific county of birth. Why does a zip code matter so much in the U.S.?" 
+    },
+    { 
+        id: 1, 
+        title: "The Local Funding Trap", 
+        content: "It matters because we don't pool our resources. Take education: unlike peer nations that fund schools centrally to ensure equality, the U.S. relies on local property taxes. If your county is poor, your public resources are poor." 
+    },
+    { 
+        id: 2, 
+        title: "The Redistribution Gap", 
+        content: "This hyper-local, 'you get what you pay for' system applies to our entire economy. Before taxes and transfers, the U.S. has similar market inequality to Europe. The difference is that peer nations use government policy to redistribute wealth. We do not." 
+    },
+    { 
+        id: 3, 
+        title: "What Inequality Costs", 
+        content: "This extreme concentration of wealth at the top has severe consequences. As inequality rises, life expectancy drops." 
+    }
+];
 
     onMount(() => {
-        // This observer triggers when a text block hits the exact vertical center of the screen
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -57,7 +70,7 @@
                 <div in:fade out:fade class="chart-box viz-1">Finding 1: US Maps Go Here</div>
             {:else if currentStep === 1}
                 <div in:fly={{x: 200}} out:fade class="chart-box">
-                    <EducationMobility />
+                    <SchoolFunding />
                 </div>
             {:else if currentStep === 2}
                 <div in:fade out:fade class="chart-box viz-2">Finding 2: Slopegraph Goes Here</div>
@@ -74,7 +87,6 @@
         width: 100%;
     }
 
-    /* Left Column */
     .story {
         width: 40%;
         padding: 0 2rem;
@@ -89,16 +101,16 @@
     }
 
     .step {
-        height: 100vh; /* Forces user to scroll to see the next point */
+        height: 100vh; 
         display: flex;
         flex-direction: column;
         justify-content: center;
-        opacity: 0.3; /* Dims text that isn't currently focused */
+        opacity: 0.3; 
         transition: opacity 0.5s ease;
     }
 
     .step.active {
-        opacity: 1; /* Highlights the text currently in the middle of the screen */
+        opacity: 1; 
     }
 
     .step h2 {
@@ -112,7 +124,6 @@
         color: #34495e;
     }
 
-    /* Right Column (Sticky Sidecar) */
     .visual-stage {
         width: 60%;
     }
@@ -128,11 +139,10 @@
         border-left: 1px solid #e0e0e0;
     }
 
-    /* Temporary placeholders for your groupmates */
     .chart-box {
         width: 95%;
-        aspect-ratio: 16 / 9; /* Forces a landscape monitor shape */
-        max-height: 85vh; /* Prevents it from getting too tall on weird monitors */
+        aspect-ratio: 16 / 9; 
+        max-height: 85vh; 
         display: flex;
         align-items: center;
         justify-content: center;
@@ -140,7 +150,7 @@
         font-weight: bold;
         color: white;
         border-radius: 12px;
-        grid-column: 1; /* Keeps cross-fades stacking perfectly */
+        grid-column: 1; 
         grid-row: 1;
     }
 
