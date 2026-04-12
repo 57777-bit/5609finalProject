@@ -332,7 +332,7 @@
         height: 100vh;
     }
 
-    /* Step 0 wrapper: height is automatic (sum of sub-steps) */
+    /* Step 0 wrapper: height is automatic */
     .step-0 {
         height: auto;
     }
