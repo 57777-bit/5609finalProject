@@ -39,6 +39,7 @@
 <script>
 
   import { onMount, onDestroy } from 'svelte';
+  import { base } from '$app/paths';
   import * as d3 from 'd3';
   import * as topojson from 'topojson-client';
   import { base } from '$app/paths';
