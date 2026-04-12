@@ -37,22 +37,11 @@
 
 
 <script>
-  /**
-   * ScrollyMap.svelte
-   *
-   * 职责：
-   *   - 加载并预处理地图数据
-   *   - 根据 mapStep prop 绘制/重绘地图
-   *   - 暴露 STEPS 常量供父组件渲染文字步骤
-   *
-   * 父组件用法：
-   *   <ScrollyMap bind:mapStep={mapStep} />
-   *   父组件负责把文字步骤渲染在左栏，把这个组件放在右栏 sticky 里。
-   */
 
   import { onMount, onDestroy } from 'svelte';
   import * as d3 from 'd3';
   import * as topojson from 'topojson-client';
+  import { base } from '$app/paths';
 
   // ── Bindable: parent reads/writes the current map step ──
   let { mapStep = $bindable(0) } = $props();
@@ -165,8 +154,8 @@
 
   onMount(async () => {
     const [rawData, us] = await Promise.all([
-      fetch('/data/data.json').then(r => r.json()),
-      fetch('/data/counties-10m.json').then(r => r.json()),
+      fetch(`${base}/data/data.json`).then(r => r.json()),
+      fetch(`${base}/data/counties-10m.json`).then(r => r.json()),
     ]);
     countyMap  = preprocess(rawData);
     geoData    = us;

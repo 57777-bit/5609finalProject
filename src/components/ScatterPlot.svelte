@@ -203,6 +203,7 @@
 
 <script>
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import * as d3 from 'd3';
 
   let svgEl = $state(null);
@@ -220,7 +221,7 @@
   let data = $state(null);
 
   onMount(async () => {
-    const rawData = await fetch('/data/data.json').then(r => r.json());
+    const rawData = await fetch(`${base}/data/data.json`).then(r => r.json());
     data = rawData;
     isLoading = false;
   });
