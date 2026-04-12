@@ -1,0 +1,244 @@
+<script>
+  import { onMount } from 'svelte';
+  import * as d3 from 'd3';
+
+  let svgEl = $state(null);
+  let rows = $state([]);
+  let tooltip = $state({ visible: false, x: 0, y: 0, country: '', market: 0, disp: 0, red: 0 });
+
+  async function loadData() {
+    const [gdimRows, swiidRows] = await Promise.all([
+      d3.csv('/data/GDIM_2023_03.csv'),
+      d3.csv('/data/swiid9_6_summary.csv')
+    ]);
+
+    const gdimCountries = new Set();
+    for (const r of gdimRows) {
+      if (r.parent === 'avg' && r.child === 'all' && Number.isFinite(Number(r.BETA))) {
+        gdimCountries.add(r.country);
+      }
+    }
+
+    const latest = new Map();
+    for (const r of swiidRows) {
+      if (!gdimCountries.has(r.country)) continue;
+
+      const year = Number(r.year);
+      const giniDisp = Number(r.gini_disp);
+      const giniMkt = Number(r.gini_mkt);
+      let absRed = Number(r.abs_red);
+
+      if (!Number.isFinite(year) || !Number.isFinite(giniDisp) || !Number.isFinite(giniMkt)) continue;
+      if (!Number.isFinite(absRed)) absRed = giniMkt - giniDisp;
+      if (!Number.isFinite(absRed)) continue;
+
+      const prev = latest.get(r.country);
+      if (!prev || year > prev.year) {
+        latest.set(r.country, {
+          country: r.country,
+          year,
+          gini_mkt: giniMkt,
+          gini_disp: giniDisp,
+          abs_red: absRed
+        });
+      }
+    }
+
+    const all = [...latest.values()].sort((a, b) => b.abs_red - a.abs_red);
+    const spotlight = new Set(['United States', 'United Kingdom', 'Canada', 'Germany', 'Sweden', 'Denmark']);
+
+    const picked = [];
+    for (const d of all) {
+      if (picked.length >= 14) break;
+      if (spotlight.has(d.country)) {
+        picked.push(d);
+      }
+    }
+    for (const d of all) {
+      if (picked.length >= 14) break;
+      if (!picked.find((x) => x.country === d.country)) {
+        picked.push(d);
+      }
+    }
+
+    rows = picked.sort((a, b) => b.abs_red - a.abs_red);
+  }
+
+  function draw() {
+    if (!svgEl || rows.length === 0) return;
+
+    const W = svgEl.clientWidth || 760;
+    const H = Math.max(460, Math.round(W * 0.62));
+    const margin = { top: 30, right: 24, bottom: 50, left: 180 };
+    const innerW = W - margin.left - margin.right;
+    const innerH = H - margin.top - margin.bottom;
+
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+    svg.attr('viewBox', `0 0 ${W} ${H}`);
+
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const xMin = d3.min(rows, (d) => d.gini_disp) - 2;
+    const xMax = d3.max(rows, (d) => d.gini_mkt) + 2;
+
+    const x = d3.scaleLinear().domain([xMin, xMax]).range([0, innerW]);
+    const y = d3.scaleBand().domain(rows.map((d) => d.country)).range([0, innerH]).padding(0.35);
+
+    g.append('g')
+      .attr('class', 'grid')
+      .attr('transform', `translate(0,${innerH})`)
+      .call(d3.axisBottom(x).ticks(6).tickSize(-innerH).tickFormat(''))
+      .call((gg) => gg.select('.domain').remove())
+      .call((gg) => gg.selectAll('line').attr('stroke', '#ececec'));
+
+    g.append('g')
+      .attr('transform', `translate(0,${innerH})`)
+      .call(d3.axisBottom(x).ticks(6))
+      .call((gg) => gg.select('.domain').attr('stroke', '#bbb'))
+      .call((gg) => gg.selectAll('text').attr('fill', '#6b6b6b').attr('font-size', 11));
+
+    g.append('g')
+      .call(d3.axisLeft(y).tickSize(0))
+      .call((gg) => gg.select('.domain').remove())
+      .call((gg) => gg.selectAll('text')
+        .attr('fill', (d) => d === 'United States' ? '#C0392B' : '#4a4a4a')
+        .attr('font-weight', (d) => d === 'United States' ? '700' : '500')
+        .attr('font-size', 11));
+
+    g.selectAll('line.link')
+      .data(rows)
+      .join('line')
+      .attr('class', 'link')
+      .attr('x1', (d) => x(d.gini_disp))
+      .attr('x2', (d) => x(d.gini_mkt))
+      .attr('y1', (d) => y(d.country) + y.bandwidth() / 2)
+      .attr('y2', (d) => y(d.country) + y.bandwidth() / 2)
+      .attr('stroke', '#c7c7c7')
+      .attr('stroke-width', 2);
+
+    const dot = (cls, accessor, color) => g.selectAll(`circle.${cls}`)
+      .data(rows)
+      .join('circle')
+      .attr('class', cls)
+      .attr('cx', (d) => x(accessor(d)))
+      .attr('cy', (d) => y(d.country) + y.bandwidth() / 2)
+      .attr('r', 4.6)
+      .attr('fill', (d) => d.country === 'United States' ? '#C0392B' : color)
+      .attr('opacity', 0.9)
+      .on('mouseenter', function(ev, d) {
+        const rect = svgEl.getBoundingClientRect();
+        tooltip = {
+          visible: true,
+          x: ev.clientX - rect.left + 10,
+          y: ev.clientY - rect.top - 14,
+          country: d.country,
+          market: d.gini_mkt,
+          disp: d.gini_disp,
+          red: d.abs_red
+        };
+        d3.select(this).attr('stroke', '#222').attr('stroke-width', 1.4);
+      })
+      .on('mousemove', function(ev) {
+        const rect = svgEl.getBoundingClientRect();
+        tooltip = { ...tooltip, x: ev.clientX - rect.left + 10, y: ev.clientY - rect.top - 14 };
+      })
+      .on('mouseleave', function() {
+        tooltip = { ...tooltip, visible: false };
+        d3.select(this).attr('stroke', null);
+      });
+
+    dot('disp', (d) => d.gini_disp, '#2E86C1');
+    dot('mkt', (d) => d.gini_mkt, '#E67E22');
+
+    g.append('text')
+      .attr('x', innerW / 2)
+      .attr('y', innerH + 40)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 12)
+      .attr('fill', '#555')
+      .attr('font-weight', '600')
+      .text('Gini (market income to disposable income after taxes/transfers)');
+  }
+
+  onMount(async () => {
+    await loadData();
+    draw();
+    const ro = new ResizeObserver(() => draw());
+    ro.observe(svgEl);
+    return () => ro.disconnect();
+  });
+</script>
+
+<div class="chart-wrapper">
+  <h3>Redistribution Dumbbell</h3>
+  <p class="subtitle">How far each country moves from market inequality to disposable inequality.</p>
+
+  <div class="svg-wrap">
+    <svg bind:this={svgEl} style="width:100%;display:block;"></svg>
+
+    {#if tooltip.visible}
+      <div class="tooltip" style="left:{tooltip.x}px;top:{tooltip.y}px">
+        <div><strong>{tooltip.country}</strong></div>
+        <div>Market Gini: {tooltip.market.toFixed(1)}</div>
+        <div>Disposable Gini: {tooltip.disp.toFixed(1)}</div>
+        <div>Reduction: -{tooltip.red.toFixed(1)} pts</div>
+      </div>
+    {/if}
+  </div>
+
+  <div class="legend-row">
+    <span><span class="dot disp"></span>Disposable Gini</span>
+    <span><span class="dot mkt"></span>Market Gini</span>
+    <span class="source">Source: SWIID v9.6 summary + GDIM 2023 overlap</span>
+  </div>
+</div>
+
+<style>
+  .chart-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  h3 { margin: 0; font-size: 1.15rem; color: #2c3e50; }
+  .subtitle { margin: 4px 0 8px; font-size: 0.84rem; color: #7b8a8b; }
+  .svg-wrap { position: relative; flex-grow: 1; min-height: 0; }
+  .tooltip {
+    position: absolute;
+    background: rgba(20,20,24,0.95);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .legend-row {
+    border-top: 1px solid #ecf0f1;
+    margin-top: 8px;
+    padding-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.77rem;
+    color: #4f5b66;
+  }
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .dot.disp { background: #2E86C1; }
+  .dot.mkt { background: #E67E22; }
+  .source { margin-left: auto; color: #9aa0a6; }
+</style>
