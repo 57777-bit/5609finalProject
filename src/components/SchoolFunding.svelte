@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import * as d3 from 'd3';
+    import { base } from '$app/paths';
 
     let chartContainer;
     let tooltipOpacity = $state(0);
@@ -9,7 +10,7 @@
     let tooltipContent = $state({ country: '', central: 0, local: 0 });
 
     onMount(() => {
-        d3.csv('/data/school_funding.csv').then((data) => {
+        d3.csv(`${base}/data/school_funding.csv`).then((data) => {
             
             const targetCountries = ["United States", "United Kingdom", "Japan", "Norway", "Sweden", "Denmark", "Germany"];
             
