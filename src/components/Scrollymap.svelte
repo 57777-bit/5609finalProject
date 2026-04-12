@@ -42,7 +42,6 @@
   import { base } from '$app/paths';
   import * as d3 from 'd3';
   import * as topojson from 'topojson-client';
-  import { base } from '$app/paths';
 
   // ── Bindable: parent reads/writes the current map step ──
   let { mapStep = $bindable(0) } = $props();
