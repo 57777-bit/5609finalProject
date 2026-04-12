@@ -181,6 +181,7 @@
 
 <script>
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import * as d3 from 'd3';
   import * as topojson from 'topojson-client';
 
@@ -220,8 +221,8 @@
 
   onMount(async () => {
     const [rawData, us] = await Promise.all([
-      fetch('/data/data.json').then(r => r.json()),
-      fetch('/data/counties-10m.json').then(r => r.json()),
+      fetch(`${base}/data/data.json`).then(r => r.json()),
+      fetch(`${base}/data/counties-10m.json`).then(r => r.json()),
     ]);
     geoData = us;
     data = rawData;

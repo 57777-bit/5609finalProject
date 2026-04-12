@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import * as d3 from 'd3';
 
   let svgEl = $state(null);
@@ -8,8 +9,8 @@
 
   async function loadData() {
     const [gdimRows, swiidRows] = await Promise.all([
-      d3.csv('/data/GDIM_2023_03.csv'),
-      d3.csv('/data/swiid9_6_summary.csv')
+      d3.csv(`${base}/data/GDIM_2023_03.csv`),
+      d3.csv(`${base}/data/swiid9_6_summary.csv`)
     ]);
 
     const gdimCountries = new Set();

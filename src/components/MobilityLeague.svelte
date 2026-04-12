@@ -1,12 +1,13 @@
 <script>
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import * as d3 from 'd3';
 
   let svgEl = $state(null);
   let rows = $state([]);
 
   async function loadData() {
-    const gdimRows = await d3.csv('/data/GDIM_2023_03.csv');
+    const gdimRows = await d3.csv(`${base}/data/GDIM_2023_03.csv`);
 
     const grouped = new Map();
     for (const r of gdimRows) {
