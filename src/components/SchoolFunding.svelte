@@ -2,7 +2,6 @@
     import { onMount } from 'svelte';
     import { base } from '$app/paths';
     import * as d3 from 'd3';
-    import { base } from '$app/paths';
 
     let chartContainer;
     let tooltipOpacity = $state(0);
