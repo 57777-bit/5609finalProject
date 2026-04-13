@@ -17,6 +17,7 @@
     let autoPlayDone = $state(false);
     let autoPlayTimer = null;
     let heroVisible = $state(false);
+    let autoPlaying = false;  /* lock to prevent observer from changing currentStep */
 
     /* ─────────────────────────────────────────────
        NEW NARRATIVE STRUCTURE
@@ -96,6 +97,8 @@
 
     function startAutoPlay() {
         if (autoPlayDone || autoPlayTimer) return;
+        autoPlaying = true;
+        currentStep = 0;
         mapStep = 0;
         scrollToCard(0);
 
@@ -114,6 +117,7 @@
 
         autoPlayTimer = setTimeout(() => {
             autoPlayDone = true;
+            autoPlaying = false;
             autoPlayTimer = null;
         }, 12500);
     }
@@ -128,8 +132,13 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const step = parseInt(entry.target.getAttribute('data-step') ?? '0');
+                        /* During auto-play, lock currentStep to 0 so the map stays visible */
+                        if (autoPlaying) {
+                            if (step === 0) currentStep = 0;
+                            return;
+                        }
                         currentStep = step;
-                        if (step === 0) startAutoPlay();
+                        if (step === 0 && !autoPlayDone) startAutoPlay();
                     }
                 });
             }, { rootMargin: '-30% 0px -30% 0px' });
