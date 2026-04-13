@@ -52,7 +52,6 @@
 
   let countyMap = new Map();
   let geoData   = null;
-  let observers = [];
 
   // ── Preprocess raw Opportunity Atlas → {fips: {name, state, p1}} ──
   function preprocess(raw) {
@@ -84,8 +83,9 @@
 
     const existing = d3.select(svgEl).select('g.counties');
     if (!existing.empty()) {
+      // Smooth recolor transition — the key animation for auto-play
       existing.selectAll('path.county')
-        .transition().duration(600).ease(d3.easeCubicInOut)
+        .transition().duration(1200).ease(d3.easeCubicInOut)
         .attr('fill', d => countyFill(countyMap.get(d.id)?.p1 ?? null, step));
       return;
     }
@@ -161,11 +161,9 @@
     geoData    = us;
     mapLoading = false;
   });
-
-  onDestroy(() => observers.forEach(o => o.disconnect()));
 </script>
 
-<!-- ── Map SVG (place this in the right sticky column) ── -->
+<!-- ── Map SVG ── -->
 <div class="map-wrap">
   {#if mapLoading}
     <p class="map-loading">Loading map…</p>
@@ -216,7 +214,7 @@
     width: 9px; height: 9px;
     border-radius: 50%;
     background: #ddd;
-    transition: background .4s, transform .3s;
+    transition: background .6s, transform .4s;
   }
   .dot.active { background: var(--c); transform: scale(1.3); }
 

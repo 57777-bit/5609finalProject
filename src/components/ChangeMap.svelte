@@ -188,7 +188,7 @@
   let svgEl = $state(null);
   let tooltip = $state({ visible: false, x: 0, y: 0, name: '', state: '', value: '', rank: '' });
   let isLoading = $state(true);
-  let activeMode = $state('p1');   // 'p1' | 'p100' | 'change'
+  let activeMode = $state('change');   // 'p1' | 'p100' | 'change'
   let data = $state(null);
   let geoData = $state(null);
 
