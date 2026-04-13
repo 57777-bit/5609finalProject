@@ -558,13 +558,12 @@
         position: sticky;
         top: 0;
         height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
         background: #fff;
         border-left: 1px solid #e0e0e0;
         padding: 1rem;
+        overflow: hidden;
     }
 
     .viz-guide {
@@ -583,19 +582,27 @@
     }
 
     .chart-box {
+        grid-area: 1 / 1;
         width: 90%;
+        max-height: 85vh;
         aspect-ratio: 4 / 3;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 0;
+        min-height: 0;
     }
 
     .chart-box--map {
         width: 95%;
-        aspect-ratio: auto;
+        aspect-ratio: unset;
+        height: auto;
     }
 
     .chart-box--tall {
+        width: 90%;
+        max-width: 60vh;
+        height: auto;
         aspect-ratio: 3 / 4;
     }
 
