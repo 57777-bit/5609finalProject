@@ -22,7 +22,7 @@
       content: "A smaller share of counties land near the middle — children reaching roughly the 40th–50th percentile. They escape the very bottom, but haven't truly climbed.",
       statNum: "~20%",
       statLabel: "of counties produce outcomes near the national median",
-      statColor: "#888"
+      statColor: "#D4A017"
     },
     {
       id: 3,
@@ -52,6 +52,7 @@
 
   let countyMap = new Map();
   let geoData   = null;
+  let observers = [];
 
   // ── Preprocess raw Opportunity Atlas → {fips: {name, state, p1}} ──
   function preprocess(raw) {
@@ -73,7 +74,7 @@
   function countyFill(p1, step) {
     if (p1 == null) return '#e8e8e8';
     if (p1 < THRESHOLD_LO)       return step >= 1 ? '#C0392B' : '#e8e8e8';
-    else if (p1 <= THRESHOLD_HI) return step >= 2 ? '#999'    : '#e8e8e8';
+    else if (p1 <= THRESHOLD_HI) return step >= 2 ? '#D4A017' : '#e8e8e8';
     else                          return step >= 3 ? '#2471A3' : '#e8e8e8';
   }
 
@@ -83,7 +84,6 @@
 
     const existing = d3.select(svgEl).select('g.counties');
     if (!existing.empty()) {
-      // Smooth recolor transition — the key animation for auto-play
       existing.selectAll('path.county')
         .transition().duration(1200).ease(d3.easeCubicInOut)
         .attr('fill', d => countyFill(countyMap.get(d.id)?.p1 ?? null, step));
@@ -161,9 +161,11 @@
     geoData    = us;
     mapLoading = false;
   });
+
+  onDestroy(() => observers.forEach(o => o.disconnect()));
 </script>
 
-<!-- ── Map SVG ── -->
+<!-- ── Map SVG (place this in the right sticky column) ── -->
 <div class="map-wrap">
   {#if mapLoading}
     <p class="map-loading">Loading map…</p>
@@ -214,7 +216,7 @@
     width: 9px; height: 9px;
     border-radius: 50%;
     background: #ddd;
-    transition: background .6s, transform .4s;
+    transition: background .4s, transform .3s;
   }
   .dot.active { background: var(--c); transform: scale(1.3); }
 
