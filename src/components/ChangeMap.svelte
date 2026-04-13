@@ -488,8 +488,8 @@
   }
 
   @keyframes btnPulse {
-    0%, 100% { border-color: #ccc; box-shadow: none; }
-    50% { border-color: #2c5f8a; box-shadow: 0 0 8px rgba(44, 95, 138, 0.15); }
+    0%, 100% { border-color: #ccc; box-shadow: 0 0 0 0 rgba(44, 95, 138, 0); transform: scale(1); }
+    50% { border-color: #2c5f8a; box-shadow: 0 0 0 4px rgba(44, 95, 138, 0.12); transform: scale(1.03); }
   }
 
   h2 {

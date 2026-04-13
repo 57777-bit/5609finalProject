@@ -94,31 +94,33 @@
         }, 200);
     }
 
+    let autoPlayTimers = [];
+
     function startAutoPlay() {
-        if (autoPlayDone || autoPlayTimer) return;
+        if (autoPlayDone || autoPlaying) return;
         autoPlaying = true;
         currentStep = 0;
         mapStep = 0;
-        scrollToCard(0);
 
         const schedule = [
             { delay: 4000, step: 1 },
-            { delay: 8000, step: 2 },
-            { delay: 12000, step: 3 },
+            { delay: 8500, step: 2 },
+            { delay: 13000, step: 3 },
         ];
 
         schedule.forEach(({ delay, step }) => {
-            setTimeout(() => {
+            const t = setTimeout(() => {
                 mapStep = step;
                 scrollToCard(step);
             }, delay);
+            autoPlayTimers.push(t);
         });
 
-        autoPlayTimer = setTimeout(() => {
+        const tDone = setTimeout(() => {
             autoPlayDone = true;
             autoPlaying = false;
-            autoPlayTimer = null;
-        }, 15000);
+        }, 16000);
+        autoPlayTimers.push(tDone);
     }
 
     onMount(() => {
@@ -148,7 +150,7 @@
         startAutoPlay();
 
         return () => {
-            if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            autoPlayTimers.forEach(t => clearTimeout(t));
         };
     });
 </script>
@@ -460,24 +462,30 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
-        margin-top: 0.8rem;
-        padding: 0.6rem 1.5rem;
-        background: rgba(230, 57, 70, 0.08);
-        border: 2px solid #e63946;
+        gap: 0.6rem;
+        margin-top: 1rem;
+        padding: 0.8rem 2rem;
+        background: rgba(230, 57, 70, 0.1);
+        border: 2.5px solid #e63946;
         border-radius: 30px;
+        animation: ctaPulse 2s ease-in-out infinite;
     }
 
     .scroll-guide-icon {
-        font-size: 1.8rem;
+        font-size: 2.2rem;
         line-height: 1;
     }
 
     .scroll-guide-hint {
-        font-size: 1rem \!important;
+        font-size: 1.15rem \!important;
         color: #e63946 \!important;
         font-weight: 700;
         margin: 0 \!important;
+    }
+
+    @keyframes ctaPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.3); }
+        50% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
     }
 
     .scroll-guide-arrows {
