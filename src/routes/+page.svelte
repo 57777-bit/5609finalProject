@@ -102,9 +102,9 @@
         scrollToCard(0);
 
         const schedule = [
-            { delay: 2500, step: 1 },
-            { delay: 6000, step: 2 },
-            { delay: 9500, step: 3 },
+            { delay: 4000, step: 1 },
+            { delay: 8000, step: 2 },
+            { delay: 12000, step: 3 },
         ];
 
         schedule.forEach(({ delay, step }) => {
@@ -118,7 +118,7 @@
             autoPlayDone = true;
             autoPlaying = false;
             autoPlayTimer = null;
-        }, 12500);
+        }, 15000);
     }
 
     onMount(() => {
@@ -450,10 +450,42 @@
         font-weight: 600;
     }
 
-    .scroll-guide-hand {
-        margin-top: 1rem;
+    .scroll-guide-main {
+        font-size: 1.15rem \!important;
+        color: #2c3e50 \!important;
+        font-weight: 500;
+    }
+
+    .scroll-guide-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+        padding: 0.6rem 1.5rem;
+        background: rgba(230, 57, 70, 0.08);
+        border: 2px solid #e63946;
+        border-radius: 30px;
+    }
+
+    .scroll-guide-icon {
+        font-size: 1.8rem;
+        line-height: 1;
+    }
+
+    .scroll-guide-hint {
+        font-size: 1rem \!important;
+        color: #e63946 \!important;
+        font-weight: 700;
+        margin: 0 \!important;
+    }
+
+    .scroll-guide-arrows {
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         animation: bounceDown 1.2s ease-in-out infinite;
-        filter: drop-shadow(0 2px 4px rgba(230, 57, 70, 0.3));
     }
 
     @keyframes bounceDown {
