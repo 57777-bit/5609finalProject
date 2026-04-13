@@ -84,9 +84,20 @@
         6: "Countries ranked by immobility (IGE). Lower bars = higher mobility. U.S. highlighted in red."
     };
 
+    function scrollToCard(stepId) {
+        // Auto-scroll the narration card into view during auto-play
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.narration-card');
+            if (cards[stepId]) {
+                cards[stepId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+
     function startAutoPlay() {
         if (autoPlayDone || autoPlayTimer) return;
         mapStep = 0;
+        scrollToCard(0);
 
         const schedule = [
             { delay: 2500, step: 1 },
@@ -95,7 +106,10 @@
         ];
 
         schedule.forEach(({ delay, step }) => {
-            setTimeout(() => { mapStep = step; }, delay);
+            setTimeout(() => {
+                mapStep = step;
+                scrollToCard(step);
+            }, delay);
         });
 
         autoPlayTimer = setTimeout(() => {
@@ -106,23 +120,26 @@
 
     onMount(() => {
         heroVisible = true;
+        currentStep = 0;
 
-        const outerObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const step = parseInt(entry.target.getAttribute('data-step') ?? '0');
-                    currentStep = step;
-                    if (step === 0) startAutoPlay();
-                }
-            });
-        }, { rootMargin: '-30% 0px -30% 0px' });
+        /* Use a tick delay so Svelte has rendered the DOM */
+        requestAnimationFrame(() => {
+            const outerObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const step = parseInt(entry.target.getAttribute('data-step') ?? '0');
+                        currentStep = step;
+                        if (step === 0) startAutoPlay();
+                    }
+                });
+            }, { rootMargin: '-30% 0px -30% 0px' });
 
-        document.querySelectorAll('.step').forEach(el => outerObserver.observe(el));
+            document.querySelectorAll('.step').forEach(el => outerObserver.observe(el));
+        });
 
         startAutoPlay();
 
         return () => {
-            outerObserver.disconnect();
             if (autoPlayTimer) clearTimeout(autoPlayTimer);
         };
     });
@@ -307,8 +324,8 @@
 
     .footer-sub {
         margin-top: 1rem;
-        font-size: 1rem !important;
-        color: #5e6f77 !important;
+        font-size: 1rem \!important;
+        color: #5e6f77 \!important;
         font-style: italic;
     }
 
@@ -316,12 +333,17 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        opacity: 0.3;
+        opacity: 0.25;
         transition: opacity 0.5s ease;
     }
 
     .step.active {
         opacity: 1;
+    }
+
+    /* Step 0 always visible during auto-play */
+    .step-0-auto {
+        opacity: 1 \!important;
     }
 
     .step:not(.step-0-auto) {
@@ -391,7 +413,7 @@
     /* ── Scroll guide after auto-play ── */
     .scroll-guide {
         text-align: center;
-            margin-top: 2rem;
+        margin-top: 2rem;
         padding: 2rem 0;
     }
 
