@@ -85,22 +85,11 @@
         6: "Countries ranked by immobility (IGE). Lower bars = higher mobility. U.S. highlighted in red."
     };
 
-    function scrollToCard(stepId) {
-        // Auto-scroll the narration card into view during auto-play
-        setTimeout(() => {
-            const cards = document.querySelectorAll('.narration-card');
-            if (cards[stepId]) {
-                cards[stepId].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
-    }
-
     function startAutoPlay() {
         if (autoPlayDone || autoPlayTimer) return;
         autoPlaying = true;
         currentStep = 0;
         mapStep = 0;
-        scrollToCard(0);
 
         const schedule = [
             { delay: 2500, step: 1 },
@@ -111,7 +100,6 @@
         schedule.forEach(({ delay, step }) => {
             setTimeout(() => {
                 mapStep = step;
-                scrollToCard(step);
             }, delay);
         });
 
