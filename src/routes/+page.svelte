@@ -182,9 +182,15 @@
                 <div class="scroll-guide" in:fade>
                     <div class="scroll-guide-line"></div>
                     <p>But geography is only the beginning of the story</p>
-                    <p class="scroll-guide-hint">Scroll down to explore why ↓</p>
-                    <div class="scroll-guide-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                    <p class="scroll-guide-hint">Scroll down to explore why</p>
+                    <div class="scroll-guide-hand">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Hand pointing down -->
+                            <path d="M24 4C23 4 22 5 22 6V26L18.7 22.7C17.9 21.9 16.6 21.9 15.8 22.7C15 23.5 15 24.8 15.8 25.6L22.6 32.4C23.4 33.2 24.6 33.2 25.4 32.4L32.2 25.6C33 24.8 33 23.5 32.2 22.7C31.4 21.9 30.1 21.9 29.3 22.7L26 26V6C26 5 25 4 24 4Z" fill="#e63946"/>
+                            <!-- Down arrows below hand -->
+                            <path d="M18 36l6 6 6-6" stroke="#e63946" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <path d="M18 30l6 6 6-6" stroke="#e63946" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+                        </svg>
                     </div>
                 </div>
             {/if}
@@ -444,14 +450,15 @@
         font-weight: 600;
     }
 
-    .scroll-guide-arrow {
-        margin-top: 0.5rem;
-        animation: bounceDown 1.5s infinite;
+    .scroll-guide-hand {
+        margin-top: 1rem;
+        animation: bounceDown 1.2s ease-in-out infinite;
+        filter: drop-shadow(0 2px 4px rgba(230, 57, 70, 0.3));
     }
 
     @keyframes bounceDown {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(8px); }
+        50% { transform: translateY(12px); }
     }
 
     /* ── Transition notes ── */
