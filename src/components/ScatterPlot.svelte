@@ -427,12 +427,11 @@
     // 4) annotation
     g.append('text')
       .attr('x', innerW / 2)
-      .attr('y', 18)
+      .attr('y', 35)
       .attr('text-anchor', 'middle')
-      .style('font-size', '13px')
-      .style('font-weight', '600')
-      .style('fill', '#666')
-      .text('Almost all counties lie above the diagonal — rich kids do better almost everywhere');
+      .style('font-size', '12px')
+      .style('fill', '#777')
+      .text('Vertical distance = mobility gap (inequality between rich and poor children)');
 
     // 5) legend
     const legendWidth = 220;
@@ -496,10 +495,12 @@
 
 <div class="chart-container">
   <h2>Mobility Slope Analysis: The Impact of Parental Income on Children's Outcomes</h2>
-  <p class="desc">
-    Each point represents a county. The closer a point is to the diagonal line, the weaker the influence of parental income on children.
-    Teal indicates a smaller rich-poor gap, while red indicates a larger gap.
-  </p>
+    <p class="desc">
+    Each point = a county.  
+    X = children from poor families, Y = children from rich families.  
+    Farther from the diagonal = larger mobility gap.
+    </p>
+
 
   {#if isLoading}
     <div class="loading">Loading...</div>
@@ -512,7 +513,9 @@
           <strong>{tooltip.name}, {tooltip.state}</strong><br />
           Children's income percentile (parents at P1): {tooltip.p1}th<br />
           Children's income percentile (parents at P100): {tooltip.p100}th<br />
-          Gap: <strong>{tooltip.gap}</strong> percentile points
+          Gap: <strong>{tooltip.gap}</strong> percentile points 
+          <br/>
+          <em>(difference between rich and poor children's outcomes)</em>
         </div>
       {/if}
     </div>

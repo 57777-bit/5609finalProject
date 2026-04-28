@@ -36,7 +36,7 @@
         {
             id: 1,
             title: "The Privilege Shield",
-            content: "Geography punishes the poor far more than it constrains the rich. Across U.S. counties, children from wealthy families end up near the top almost everywhere. For children born poor, the county they're born in makes all the difference.",
+            content: "Geography punishes the poor far more than it constrains the rich. Across U.S. counties, children from wealthy families end up near the top almost everywhere. For children born poor, the county they're born in makes all the difference. We measure this gap by comparing outcomes for children born at the bottom (P1) and the top (P100) of the income distribution. The larger the difference, the lower the mobility.",
             transition: "If where you're born locks in your fate, is the lock at least loosening over time?"
         },
         {
@@ -76,7 +76,7 @@
     ];
 
     const vizGuide = {
-        0: "Watch how birthplace shapes opportunity — the map reveals itself automatically.",
+        0: "The map will play automatically to show how opportunity varies across counties. Then switch to the ‘State bubble map’ to explore — circle size shows population, and you can click a state to zoom into county details.",
         1: "Compare county outcomes: X-axis = children born poor, Y-axis = children born rich. Points far from the diagonal show large gaps.",
         2: "Blue counties = mobility improved (1978→1992). Red counties = mobility worsened. Toggle views to compare.",
         3: "Compare who pays for schools: blue = central/federal funding, red = local/state funding.",
@@ -142,7 +142,7 @@
                         if (step === 0 && !autoPlayDone) startAutoPlay();
                     }
                 });
-            }, { rootMargin: '-30% 0px -30% 0px' });
+            }, { rootMargin: '-20% 0px -45% 0px', threshold: 0.25 });
 
             document.querySelectorAll('.step').forEach(el => outerObserver.observe(el));
         });
@@ -155,13 +155,24 @@
     });
 </script>
 
+<!-- ── Full-screen hero ── -->
+<section class="hero" class:visible={heroVisible}>
+    <div class="hero-inner">
+        <p class="hero-eyebrow">A data story</p>
+        <h1>The Geography<br>of Opportunity</h1>
+        <p class="hero-sub">Birthplace, mobility, and policy</p>
+        <p class="hero-question">Why does a zip code matter so much in the U.S., and does cross-country evidence suggest policy can change that?</p>
+        <div class="hero-scroll-hint">
+            <span>Scroll to explore</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </div>
+</section>
+
 <div class="layout">
     <div class="story">
-        <div class="header" class:visible={heroVisible}>
-            <h1>The Geography of Opportunity</h1>
-            <p class="subtitle">A data story about birthplace, mobility, and policy</p>
-            <p class="key-question">Key question: Why does birthplace matter so much in the U.S., and does cross-country evidence suggest policy can change that?</p>
-        </div>
 
         <!-- ── Step 0: Auto-play map narration ── -->
         <div class="step step-0-auto" data-step={0} class:active={currentStep === 0}>
@@ -288,18 +299,61 @@
         z-index: 10;
     }
 
-    .header {
-        height: 70vh;
+    /* ── Hero ── */
+    .hero {
+        height: 100vh;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         justify-content: center;
+        background: #fff;
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
         transition: opacity 1s ease, transform 1s ease;
     }
-    .header.visible {
+    .hero.visible {
         opacity: 1;
         transform: translateY(0);
+    }
+    .hero-inner {
+        text-align: center;
+        max-width: 640px;
+        padding: 2rem;
+    }
+    .hero-eyebrow {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #e63946;
+        margin-bottom: 1rem;
+    }
+    .hero-inner h1 {
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        color: #2c3e50;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
+    .hero-sub {
+        font-size: 1.1rem;
+        color: #5e6f77;
+        margin-bottom: 1.5rem;
+    }
+    .hero-question {
+        font-size: 1rem;
+        color: #5e6f77;
+        line-height: 1.6;
+        max-width: 48ch;
+        margin: 0 auto 2.5rem;
+        font-weight: 500;
+    }
+    .hero-scroll-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        animation: bounceDown 1.8s ease-in-out infinite;
     }
 
     .subtitle {
@@ -363,8 +417,8 @@
     }
 
     .step:not(.step-0-auto) {
-        min-height: 60vh;
-        padding: 3rem 0;
+        min-height: 80vh;
+        padding: 4rem 0;
     }
 
     /* ── Step 0 auto-play ── */
