@@ -130,6 +130,17 @@ static/
 
 ---
 
+## Team and Contributions
+
+| Member | Contributions |
+|---|---|
+| Brandon Borzello | Visualizations & animations · Presentation · Project leadership |
+| Harris Li | Visualizations & animations · Supporting datasets |
+| Qi Wu | Site scaffolding · Visualizations & animations · Primary datasets · Project leadership |
+| Yiqi Huang | Visualizations & animations · Primary datasets · Presentation · Project leadership |
+
+---
+
 ## Attributions and Acknowledgements
 
 - County mobility data: Chetty et al., *The Opportunity Atlas* — https://www.opportunityatlas.org
