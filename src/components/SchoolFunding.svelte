@@ -103,12 +103,34 @@
                 .attr("width", d => x(d[1]) - x(d[0]));
 
             svg.append("text").attr("x", -80).attr("y", -25).attr("font-size", "20px").attr("font-weight", "bold").style("fill", "#2c3e50").text("Who Pays for Schools?");
-            
+
             svg.append("rect").attr("x", width - 260).attr("y", -35).attr("width", 12).attr("height", 12).style("fill", "#3498db");
             svg.append("text").attr("x", width - 240).attr("y", -25).text("Central/Federal").style("font-size", "12px").attr("fill", "#7f8c8d");
-            
+
             svg.append("rect").attr("x", width - 120).attr("y", -35).attr("width", 12).attr("height", 12).style("fill", "#e74c3c");
             svg.append("text").attr("x", width - 100).attr("y", -25).text("Local/State").style("font-size", "12px").attr("fill", "#7f8c8d");
+
+            // Big "X% local" annotation centered inside the U.S. red segment
+            // so the prose mention ("91% local") has a visual anchor on the bar.
+            const us = filteredData.find(d => d.country === "United States");
+            if (us) {
+                const yMid = y(us.country) + y.bandwidth() / 2;
+                const xMid = x(us.central + us.local / 2);
+                svg.append("text")
+                    .attr("x", xMid)
+                    .attr("y", yMid + 5)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "20px")
+                    .style("font-weight", "800")
+                    .style("fill", "#fff")
+                    .style("paint-order", "stroke")
+                    .style("stroke", "#c0392b")
+                    .style("stroke-width", "3.5px")
+                    .style("pointer-events", "none")
+                    .style("opacity", 0)
+                    .text(`${Math.round(us.local)}% local`)
+                    .transition().delay(900).duration(400).style("opacity", 1);
+            }
         });
     });
 </script>

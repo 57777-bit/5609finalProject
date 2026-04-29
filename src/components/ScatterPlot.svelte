@@ -369,24 +369,46 @@
       .text("Children's income percentile (parents at P100)");
 
     // points
-    const dots = g.selectAll('circle')
-      .data(sampledData)
+    // const dots = g.selectAll('circle')
+    //   .data(sampledData)
+    //   .join('circle')
+    //   .attr('cx', d => x(d.kfr_pooled_pooled_p1_1978))
+    //   .attr('cy', d => y(d.kfr_pooled_pooled_p100_1978))
+    //   .attr('r', 4.5)
+    //   .attr('fill', d =>
+    //     gapColor(d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978)
+    //   )
+    //   .attr('opacity', 0.72)
+    //   .attr('stroke', '#fff')
+    //   .attr('stroke-width', 0.6);
+    const sortedData = [...sampledData].sort(
+      (a, b) => a.kfr_pooled_pooled_p1_1978 - b.kfr_pooled_pooled_p1_1978
+    );
+
+    g.selectAll('circle')
+      .data(sortedData)
       .join('circle')
       .attr('cx', d => x(d.kfr_pooled_pooled_p1_1978))
       .attr('cy', d => y(d.kfr_pooled_pooled_p100_1978))
-      .attr('r', 4.5)
+      .attr('r', 0)
+      .attr('opacity', 0)
       .attr('fill', d =>
         gapColor(d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978)
       )
-      .attr('opacity', 0.72)
       .attr('stroke', '#fff')
-      .attr('stroke-width', 0.6);
+      .attr('stroke-width', 0.6)
+      .transition()
+      .delay((_, i) => i * 3)
+      .duration(300)
+      .ease(d3.easeCubicOut)
+      .attr('r', 4.5)
+      .attr('opacity', 0.72);
 
-    // 3) hover dimming
-    dots
+    const dotSelection = g.selectAll('circle');
+
+    dotSelection
       .on('mouseover', function (event, d) {
-        dots.transition().duration(150).attr('opacity', 0.08);
-
+        dotSelection.transition().duration(150).attr('opacity', 0.08);
         d3.select(this)
           .raise()
           .transition()
@@ -395,7 +417,6 @@
           .attr('opacity', 1)
           .attr('stroke', '#333')
           .attr('stroke-width', 1.5);
-
         tooltip = {
           visible: true,
           x: event.offsetX + 12,
@@ -408,31 +429,25 @@
         };
       })
       .on('mousemove', function (event) {
-        tooltip = {
-          ...tooltip,
-          x: event.offsetX + 12,
-          y: event.offsetY - 28
-        };
+        tooltip = { ...tooltip, x: event.offsetX + 12, y: event.offsetY - 28 };
       })
       .on('mouseout', function () {
-        dots.transition().duration(180)
+        dotSelection.transition().duration(180)
           .attr('r', 4.5)
           .attr('opacity', 0.72)
           .attr('stroke', '#fff')
           .attr('stroke-width', 0.6);
-
         tooltip = { ...tooltip, visible: false };
       });
 
     // 4) annotation
     g.append('text')
       .attr('x', innerW / 2)
-      .attr('y', 18)
+      .attr('y', 15)
       .attr('text-anchor', 'middle')
-      .style('font-size', '13px')
-      .style('font-weight', '600')
-      .style('fill', '#666')
-      .text('Almost all counties lie above the diagonal — rich kids do better almost everywhere');
+      .style('font-size', '12px')
+      .style('fill', '#777')
+      .text('Vertical distance = mobility gap (inequality between rich and poor children)');
 
     // 5) legend
     const legendWidth = 220;
@@ -463,6 +478,12 @@
     const legend = g.append('g')
       .attr('transform', `translate(${legendX},${legendY})`);
 
+    svg.selectAll('.tick, .domain')
+      .style('opacity', 0)
+      .transition()
+      .duration(600)
+      .style('opacity', 1);
+
     legend.append('rect')
       .attr('width', legendWidth)
       .attr('height', legendHeight)
@@ -491,15 +512,48 @@
       .style('font-size', '11px')
       .style('fill', '#666')
       .text('Large gap');
+
+    // Outlier labels: 3 counties with the largest mobility gap so the prose
+    // "the reddest dots are where the gap is largest" lands on specific places.
+    const outliers = [...sampledData]
+      .map((d) => ({
+        ...d,
+        gap: d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978,
+      }))
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3);
+
+    g.selectAll('text.outlier-label')
+      .data(outliers)
+      .join('text')
+      .attr('class', 'outlier-label')
+      .attr('x', (d) => x(d.kfr_pooled_pooled_p1_1978) + 8)
+      .attr('y', (d) => y(d.kfr_pooled_pooled_p100_1978) - 8)
+      .style('font-size', '10px')
+      .style('font-weight', 700)
+      .style('fill', '#9b1c2a')
+      .attr('paint-order', 'stroke')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 3)
+      .style('pointer-events', 'none')
+      .style('opacity', 0)
+      .text((d) => {
+        const name = d.county_name ?? 'unknown';
+        const state = d.state_name ?? '';
+        return state ? `${name}, ${state}` : name;
+      })
+      .transition().delay(1400).duration(500).style('opacity', 1);
   }
 </script>
 
 <div class="chart-container">
   <h2>Mobility Slope Analysis: The Impact of Parental Income on Children's Outcomes</h2>
-  <p class="desc">
-    Each point represents a county. The closer a point is to the diagonal line, the weaker the influence of parental income on children.
-    Teal indicates a smaller rich-poor gap, while red indicates a larger gap.
-  </p>
+    <p class="desc">
+    Each point = a county.  
+    X = children from poor families, Y = children from rich families.  
+    Farther from the diagonal = larger mobility gap.
+    </p>
+
 
   {#if isLoading}
     <div class="loading">Loading...</div>
@@ -512,7 +566,9 @@
           <strong>{tooltip.name}, {tooltip.state}</strong><br />
           Children's income percentile (parents at P1): {tooltip.p1}th<br />
           Children's income percentile (parents at P100): {tooltip.p100}th<br />
-          Gap: <strong>{tooltip.gap}</strong> percentile points
+          Gap: <strong>{tooltip.gap}</strong> percentile points 
+          <br/>
+          <em>(difference between rich and poor children's outcomes)</em>
         </div>
       {/if}
     </div>
