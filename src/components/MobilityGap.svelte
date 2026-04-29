@@ -332,6 +332,15 @@
     </div>
   </div>
 
+  <div class="how-to-read">
+    <span class="htr-label">How to read</span>
+    <ul>
+      <li><strong>X-axis — Gini coefficient:</strong> derived from the Lorenz curve — how far actual incomes deviate from perfect equality. 0 = everyone equal; higher = more unequal.</li>
+      <li><strong>Y-axis — IGE β:</strong> slope of an OLS regression of log(child income) on log(parent income). 0 = birthplace irrelevant (perfect mobility); 1 = income fully inherited.</li>
+      <li><strong>Bubble size</strong> reflects how much taxes and transfers reduce inequality (Market Gini − Disposable Gini).</li>
+    </ul>
+  </div>
+
   <div class="svg-wrap">
     <svg bind:this={svgEl} style="width:100%;display:block;"></svg>
 
@@ -398,6 +407,36 @@
     font-size: 0.82rem;
     color: #7f8c8d;
     line-height: 1.4;
+  }
+
+  .how-to-read {
+    background: #f0f4f8;
+    border-left: 3px solid #2471A3;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 12px;
+    margin: 8px 0 6px;
+    font-size: 0.76rem;
+    color: #4a5568;
+    line-height: 1.5;
+  }
+
+  .htr-label {
+    display: block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.67rem;
+    color: #2471A3;
+    margin-bottom: 4px;
+  }
+
+  .how-to-read ul {
+    margin: 0;
+    padding-left: 14px;
+  }
+
+  .how-to-read li {
+    margin: 2px 0;
   }
 
   .svg-wrap {
