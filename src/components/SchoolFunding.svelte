@@ -12,7 +12,7 @@
     onMount(() => {
         d3.csv(`${base}/data/school_funding.csv`).then((data) => {
             
-            const targetCountries = ["United States", "United Kingdom", "Japan", "Norway", "Sweden", "Denmark", "Germany"];
+            const targetCountries = ["United States", "United Kingdom", "Japan", "Norway", "Sweden", "Denmark"];
             
             let filteredData = data.filter(d => targetCountries.includes(d.country));
 

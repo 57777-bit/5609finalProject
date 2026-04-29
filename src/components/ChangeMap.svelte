@@ -188,7 +188,7 @@
   let svgEl = $state(null);
   let tooltip = $state({ visible: false, x: 0, y: 0, name: '', state: '', value: '', rank: '' });
   let isLoading = $state(true);
-  let activeMode = $state('p1');   // 'p1' | 'p100' | 'change'
+  let activeMode = $state('change');   // 'p1' | 'p100' | 'change'
   let data = $state(null);
   let geoData = $state(null);
 
@@ -463,12 +463,19 @@
     cursor: pointer;
     font-size: 0.85rem;
     color: #444;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    animation: btnPulse 2s ease-in-out infinite;
   }
 
+  .toggle-btn:nth-child(1) { animation-delay: 0s; }
+  .toggle-btn:nth-child(2) { animation-delay: 0.3s; }
+  .toggle-btn:nth-child(3) { animation-delay: 0.6s; }
+
   .toggle-btn:hover {
-    border-color: #888;
+    border-color: #2c5f8a;
     color: #111;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(44, 95, 138, 0.2);
   }
 
   .toggle-btn.active {
@@ -476,6 +483,13 @@
     border-color: #2c5f8a;
     color: white;
     font-weight: 600;
+    animation: none;
+    box-shadow: 0 2px 8px rgba(44, 95, 138, 0.3);
+  }
+
+  @keyframes btnPulse {
+    0%, 100% { border-color: #ccc; box-shadow: 0 0 0 0 rgba(44, 95, 138, 0); transform: scale(1); }
+    50% { border-color: #2c5f8a; box-shadow: 0 0 0 4px rgba(44, 95, 138, 0.12); transform: scale(1.03); }
   }
 
   h2 {

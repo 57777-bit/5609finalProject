@@ -22,7 +22,7 @@
       content: "A smaller share of counties land near the middle — children reaching roughly the 40th–50th percentile. They escape the very bottom, but haven't truly climbed.",
       statNum: "~20%",
       statLabel: "of counties produce outcomes near the national median",
-      statColor: "#888"
+      statColor: "#D4A017"
     },
     {
       id: 3,
@@ -74,7 +74,7 @@
   function countyFill(p1, step) {
     if (p1 == null) return '#e8e8e8';
     if (p1 < THRESHOLD_LO)       return step >= 1 ? '#C0392B' : '#e8e8e8';
-    else if (p1 <= THRESHOLD_HI) return step >= 2 ? '#999'    : '#e8e8e8';
+    else if (p1 <= THRESHOLD_HI) return step >= 2 ? '#D4A017' : '#e8e8e8';
     else                          return step >= 3 ? '#2471A3' : '#e8e8e8';
   }
 
@@ -85,7 +85,7 @@
     const existing = d3.select(svgEl).select('g.counties');
     if (!existing.empty()) {
       existing.selectAll('path.county')
-        .transition().duration(600).ease(d3.easeCubicInOut)
+        .transition().duration(1200).ease(d3.easeCubicInOut)
         .attr('fill', d => countyFill(countyMap.get(d.id)?.p1 ?? null, step));
       return;
     }
