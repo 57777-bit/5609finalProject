@@ -287,6 +287,31 @@
         .text('NORDIC BENCHMARKS')
         .transition().delay(700).duration(400).attr('opacity', 0.9);
     }
+
+    // Takeaway callout pointing at the U.S. dot — the prose mention of
+    // "U.S. as a wealthy outlier" should land on a specific mark on the chart.
+    const usPoint = data.find((d) => d.country === 'United States');
+    if (usPoint) {
+      const takeawayX = innerW * 0.62;
+      const takeawayY = 18;
+      const annoG = g.append('g').attr('class', 'us-takeaway').attr('opacity', 0);
+      annoG.append('text')
+        .attr('x', takeawayX)
+        .attr('y', takeawayY)
+        .attr('font-size', 12)
+        .attr('font-weight', 700)
+        .attr('fill', usColor)
+        .text('U.S. — high inequality, low mobility');
+      annoG.append('line')
+        .attr('x1', takeawayX + 4)
+        .attr('y1', takeawayY + 6)
+        .attr('x2', x(usPoint.gini_disp) + 4)
+        .attr('y2', y(usPoint.ige) - 8)
+        .attr('stroke', usColor)
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '3,3');
+      annoG.transition().delay(900).duration(450).attr('opacity', 0.9);
+    }
   }
 
   onMount(async () => {

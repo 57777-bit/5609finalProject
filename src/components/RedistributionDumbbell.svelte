@@ -185,6 +185,23 @@
       .attr('font-weight', 700)
       .attr('fill', (d) => d.country === 'United States' ? '#C0392B' : NORDIC_COLOR)
       .text((d) => `−${d.abs_red.toFixed(1)} pts`);
+
+    // Takeaway annotation comparing U.S. vs the strongest Nordic redistributor —
+    // anchors the prose claim "U.S. barely moves the needle" to a specific gap.
+    const usRow = rows.find((d) => d.country === 'United States');
+    const topNordic = rows.filter((d) => NORDIC.has(d.country))
+      .sort((a, b) => b.abs_red - a.abs_red)[0];
+    if (usRow && topNordic) {
+      const headlineY = -8;
+      g.append('text')
+        .attr('x', innerW)
+        .attr('y', headlineY)
+        .attr('text-anchor', 'end')
+        .attr('font-size', 12)
+        .attr('font-weight', 700)
+        .attr('fill', '#2c3e50')
+        .text(`U.S. cuts inequality by only ${usRow.abs_red.toFixed(1)} pts vs. ${topNordic.country}'s ${topNordic.abs_red.toFixed(1)} pts`);
+    }
   }
 
   onMount(async () => {
