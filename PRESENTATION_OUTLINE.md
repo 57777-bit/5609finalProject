@@ -134,7 +134,19 @@ Ranking of major economies by **intergenerational immobility (IGE)**.
 
 ---
 
-## Slide 12 — Design Decisions That Mattered (0:45)
+## Slide 12 — Bonus Step 7 · 3D Topography of Opportunity (0:45) [DEMO]
+
+A **3D extruded county map** of upward mobility for children of poor parents (1992 cohort). Each column = one U.S. county. Height = mobility percentile. Color = same red-blue diverging scale as the 2D map.
+
+- **Tech:** deck.gl `OrbitView` + `ColumnLayer` + `PathLayer` for state borders, dynamic-imported so it only loads when the user scrolls into Step 7.
+- **Coordinate system:** county centroids projected with `d3.geoAlbersUsa` to pixel space, then re-centered to (0,0) so OrbitView orbits around the geographic center of the U.S.
+- **Interaction:** drag to orbit, scroll to zoom, hover on a column for county + mobility detail.
+
+**Talking point:** "The 2D choropleth answers *which* counties are stuck. The 3D extrusion answers *how dramatic* the difference is between neighbors — the mountains and the valleys aren't even on the same scale. We kept it as a bonus rather than the opener because color encoding remains more accessible for the headline argument; the 3D is here to make the magnitude visceral."
+
+---
+
+## Slide 13 — Design Decisions That Mattered (0:45)
 
 1. **Two-act structure** (American problem → global perspective). Local-then-global lets the reader internalize within-country spread before weighing the U.S. against peers.
 2. **Sticky right panel.** Chart stays anchored; prose advances on the left.
@@ -146,26 +158,27 @@ Ranking of major economies by **intergenerational immobility (IGE)**.
 
 ---
 
-## Slide 13 — Animation & Interaction Highlights (0:30)
+## Slide 14 — Animation & Interaction Highlights (0:30)
 
 - **Morph animation** (scatter → bar ranking) on Step 6.
 - **Animated reveal** on Step 2 (county-by-county fill transition).
 - **Button-triggered playback** on Step 0 with Replay.
 - **Hover tooltips** on every chart with country / county / value detail.
 - **State drill-down** in the bubble view.
+- **3D orbit + zoom** on bonus Step 7 (deck.gl).
 - **In-chart annotations** on every step so prose references resolve to specific marks.
 
 ---
 
-## Slide 14 — Reflection (0:30)
+## Slide 15 — Reflection (0:30)
 
-- **What worked:** scrollytelling kept the argument sequenced; sticky charts gave each prose beat a visual anchor.
-- **What we'd redo:** consider deck.gl 3D extruded county map as a Step 0 alternative — more striking, but harder to keep accessible.
+- **What worked:** scrollytelling kept the argument sequenced; sticky charts gave each prose beat a visual anchor. Adding the deck.gl 3D bonus at the end gave a "magnitude reveal" without competing with the 2D choropleth's accessibility for the headline argument.
+- **What we'd redo:** invest more in keyboard-only interaction for the 3D scene — orbit/zoom currently rely on mouse gestures.
 - **Hardest part:** keeping the same 20-country roster visually consistent across Steps 4, 5, 6. The morph is what makes that roster legible.
 
 ---
 
-## Slide 15 — Q&A / Links (0:15)
+## Slide 16 — Q&A / Links (0:15)
 
 **Live demo:** https://57777-bit.github.io/5609finalProject/
 **Repo:** https://github.com/57777-bit/5609finalProject
@@ -180,11 +193,12 @@ Ranking of major economies by **intergenerational immobility (IGE)**.
 ## Suggested Demo Path (if live demo time-boxed to 90s)
 
 1. Land on hero, hit **Play** → watch tier animation (~10s).
-2. Click any state in the Dorling bubble view → zoom into that state's counties (~10s).
-3. Scroll through Steps 1 → 5 quickly (~30s) to show prose+chart binding.
+2. Click any state in the Dorling bubble view → zoom into that state's counties (~5s).
+3. Scroll through Steps 1 → 5 quickly (~25s) to show prose+chart binding.
 4. Stop on Step 6 → wait for the morph from scatter to bars (~15s).
 5. Hover on the U.S. row to show tooltip (~5s).
-6. Quick scroll back up to show stickiness still works (~15s).
+6. Scroll into bonus Step 7 → drag to orbit the 3D mobility scene (~15s).
+7. Quick scroll back up to show stickiness still works (~15s).
 
 ## Backup Demo Plan (if live URL is down)
 

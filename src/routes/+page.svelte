@@ -8,6 +8,7 @@
     import MobilityGap from '../components/MobilityGap.svelte';
     import RedistributionDumbbell from '../components/RedistributionDumbbell.svelte';
     import MobilityLeague from '../components/MobilityLeague.svelte';
+    import Mobility3D from '../components/Mobility3D.svelte';
 
     let currentStep = $state(0);
     let mapStep = $state(0);
@@ -71,6 +72,14 @@
             id: 6,
             title: "Where America Stands",
             content: "The chart on the right ranks twenty major economies by intergenerational immobility — shorter bars mean kids escape their parents' income bracket more easily. The U.S. sits at rank 10, with nine wealthy peers above it: Canada, Australia, Sweden, Finland, the United Kingdom, Japan, Korea, the Netherlands, and Switzerland. Every one of them gives their poor children a better shot than America does. The four highlighted in deep blue (Canada, Sweden, the United Kingdom, Japan) are the most-cited cultural benchmarks.",
+            transition: "Finally, a 3D look at the same county-level mobility data. Drag the scene to orbit, scroll to zoom — the column heights are mobility itself, so the country's terrain literally becomes a topography of opportunity."
+        },
+
+        /* ── Bonus: 3D extruded mobility map ── */
+        {
+            id: 7,
+            title: "A Topography of Opportunity",
+            content: "Each column is a U.S. county; its height is upward mobility for children of poor parents (1992 cohort). The mountains and the valleys aren't terrain — they're the same county-level mobility you saw in the opening map, recast as something you can walk around. Drag to orbit, scroll to zoom. Tall blue ridges = places where poor children climb; short red basins = places where they don't.",
             transition: ""
         }
     ];
@@ -82,7 +91,8 @@
         3: "Compare who pays for schools: blue = central/federal funding, red = local/state funding.",
         4: "Each bubble is a country. X = inequality (Gini), Y = immobility (IGE). The U.S. is highlighted.",
         5: "Each line spans from market Gini to disposable Gini. Longer lines = stronger redistribution.",
-        6: "Countries ranked by immobility (IGE). Lower bars = higher mobility. U.S. highlighted in red."
+        6: "Countries ranked by immobility (IGE). Lower bars = higher mobility. U.S. highlighted in red.",
+        7: "Drag the canvas to orbit the 3D scene. Scroll to zoom. Hover any column for the county name and exact mobility value."
     };
 
     function scrollToCard(stepId) {
@@ -350,7 +360,7 @@
                         <MobilityGap />
                     {/if}
                 </div>
-            {:else if currentStep >= 6}
+            {:else if currentStep === 6}
                 <!-- Act II, Step 6: Mobility League -->
                 <div in:fade out:fade class="chart-box chart-box--tall">
                     {#if useMilestoneExtras}
@@ -358,6 +368,11 @@
                     {:else}
                         <MobilityGap />
                     {/if}
+                </div>
+            {:else if currentStep >= 7}
+                <!-- Bonus Step 7: 3D extruded mobility map (deck.gl) -->
+                <div in:fade out:fade class="chart-box chart-box--tall">
+                    <Mobility3D />
                 </div>
             {/if}
         </div>
