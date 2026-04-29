@@ -459,9 +459,10 @@
     .hero-3d {
         flex: 1;
         min-width: 0;
-        padding: 1.2rem 1.5rem 1.2rem 0;
+        padding: 0;
         display: flex;
         flex-direction: column;
+        align-items: stretch;
     }
     .hero-eyebrow {
         font-size: 0.73rem;

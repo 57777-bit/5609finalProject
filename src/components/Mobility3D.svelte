@@ -24,18 +24,17 @@
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function opportunityColor(t) {
-    // Both ends are vivid so they stand out clearly against the black (#0A0A0A) bg.
-    // Low  → electric blue  (cold / stuck counties)
-    // High → gold-orange    (hot  / high-opportunity counties)
-    // The eye immediately reads cold ↔ warm = stuck ↔ opportunity.
-    if (t <= 0) return [20,  90, 255];
-    if (t >= 1) return [255, 200,  10];
+    // Low mobility fades into the dark background (recedes visually).
+    // High mobility glows like fire — opportunity literally illuminates.
+    // Transition: dark indigo → deep crimson → vivid orange → bright gold.
+    if (t <= 0) return [35, 15, 80];
+    if (t >= 1) return [255, 235, 40];
     const stops = [
-      [0.00, [ 20,  90, 255]],   // electric blue
-      [0.28, [ 80,  20, 200]],   // deep violet
-      [0.50, [180,  10,  80]],   // magenta-crimson (clear midpoint)
-      [0.72, [255,  60,   0]],   // vivid orange-red
-      [1.00, [255, 200,  10]],   // gold — top-ranked counties glow
+      [0.00, [ 35,  15,  80]],  // dark indigo — nearly invisible on black bg
+      [0.25, [130,  10,  70]],  // deep wine-crimson
+      [0.50, [215,  35,   0]],  // vivid red-orange — midpoint burns
+      [0.75, [255, 130,   0]],  // bright orange
+      [1.00, [255, 235,  40]],  // gold-yellow — top counties glow
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -67,7 +66,10 @@
     ]);
 
     const W = container.clientWidth || 800;
-    const H = Math.max(500, Math.round(W * 0.62));
+    // Use the canvas-wrap's actual height so the map fills the full panel,
+    // not an arbitrary W*0.62 guess.
+    const wrapEl = canvas.parentElement;
+    const H = Math.max(480, wrapEl?.clientHeight || Math.round(W * 0.62));
 
     const countiesGeo = topojson.feature(us, us.objects.counties);
     const statesGeo   = topojson.feature(us, us.objects.states);
@@ -203,7 +205,7 @@
           extruded: true,
           pickable: true,
           getPosition: d => [d.x, d.y, 0],
-          getElevation: d => Math.max(2, (d.value - lo) * 900),
+          getElevation: d => Math.max(2, (d.value - lo) * 1200),
           getFillColor: d => rgbaFor(d.value, f == null || d.state === f),
           material: { ambient: 0.4, diffuse: 0.8, shininess: 40, specularColor: [255, 180, 100] },
           updateTriggers: { getFillColor: f },
@@ -218,9 +220,9 @@
       views: [new OrbitView({ orthographic: false })],
       initialViewState: {
         target: [0, 0, 50],
-        zoom: -1.2,
-        rotationX: 52,
-        rotationOrbit: 0,
+        zoom: -0.4,
+        rotationX: 44,
+        rotationOrbit: -8,
         minZoom: -3,
         maxZoom: 3,
       },
@@ -281,9 +283,9 @@
       deckInstance.setProps({
         initialViewState: {
           target: [0, 0, 50],
-          zoom: -1.2,
-          rotationX: 52,
-          rotationOrbit: 0,
+          zoom: -0.4,
+          rotationX: 44,
+          rotationOrbit: -8,
           transitionDuration: 900,
           transitionInterpolator: new LinearInterpolator([
             'target', 'zoom', 'rotationX', 'rotationOrbit',
@@ -322,7 +324,7 @@
     resizeObserver = new ResizeObserver(() => {
       if (!deckInstance) return;
       const nW = container.clientWidth || W;
-      const nH = Math.max(500, Math.round(nW * 0.62));
+      const nH = Math.max(480, canvas.parentElement?.clientHeight || Math.round(nW * 0.62));
       deckInstance.setProps({ width: nW, height: nH });
     });
     resizeObserver.observe(container);
@@ -435,8 +437,7 @@
     display: flex;
     flex-direction: column;
     background: #0A0A0A;
-    border-radius: 12px;
-    padding: 14px 16px 10px;
+    padding: 12px 20px 8px;
     box-sizing: border-box;
     color: #E8DDD0;
   }
@@ -488,9 +489,8 @@
   .canvas-wrap {
     position: relative;
     flex-grow: 1;
-    min-height: 460px;
+    min-height: 300px;
     overflow: hidden;
-    border-radius: 8px;
     background: #0A0A0A;
   }
 
