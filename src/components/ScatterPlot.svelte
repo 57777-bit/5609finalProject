@@ -512,6 +512,37 @@
       .style('font-size', '11px')
       .style('fill', '#666')
       .text('Large gap');
+
+    // Outlier labels: 3 counties with the largest mobility gap so the prose
+    // "the reddest dots are where the gap is largest" lands on specific places.
+    const outliers = [...sampledData]
+      .map((d) => ({
+        ...d,
+        gap: d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978,
+      }))
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3);
+
+    g.selectAll('text.outlier-label')
+      .data(outliers)
+      .join('text')
+      .attr('class', 'outlier-label')
+      .attr('x', (d) => x(d.kfr_pooled_pooled_p1_1978) + 8)
+      .attr('y', (d) => y(d.kfr_pooled_pooled_p100_1978) - 8)
+      .style('font-size', '10px')
+      .style('font-weight', 700)
+      .style('fill', '#9b1c2a')
+      .attr('paint-order', 'stroke')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 3)
+      .style('pointer-events', 'none')
+      .style('opacity', 0)
+      .text((d) => {
+        const name = d.county_name ?? 'unknown';
+        const state = d.state_name ?? '';
+        return state ? `${name}, ${state}` : name;
+      })
+      .transition().delay(1400).duration(500).style('opacity', 1);
   }
 </script>
 

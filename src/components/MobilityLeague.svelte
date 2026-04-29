@@ -6,6 +6,12 @@
   let svgEl = $state(null);
   let rows = $state([]);
 
+  // Wealthy peer economies named in the prose ("Canada, Sweden, the United
+  // Kingdom, Japan") — give them a distinct deep-blue accent so the four
+  // bolded names in the footer text resolve to four visibly emphasised rows.
+  const PEERS = new Set(['Canada', 'Sweden', 'United Kingdom', 'Japan']);
+  const PEER_COLOR = '#1F4E79';
+
   async function loadData() {
     const gdimRows = await d3.csv(`${base}/data/GDIM_2023_03.csv`);
 
@@ -24,14 +30,25 @@
       ige: d3.mean(vals)
     })).sort((a, b) => a.ige - b.ige);
 
-    const keep = new Set(['United States', 'United Kingdom', 'Canada', 'Germany', 'Japan', 'China', 'Brazil', 'Denmark', 'Sweden']);
-    const top = all.slice(0, 8);
-    const bottom = all.slice(-8);
+    // Curated league: focus on rich peer economies + a few high-inequality
+    // reference points. The footer prose talks about "rich peer economies"
+    // so the chart's roster needs to read as such — random low-IGE outliers
+    // (Mauritius, Uzbekistan, Maldives, etc.) muddied the visual story.
+    const KEEP = new Set([
+      'United States',
+      // Named peers (highlighted in deep blue)
+      'Canada', 'Sweden', 'United Kingdom', 'Japan',
+      // Other major rich economies
+      'Germany', 'France', 'Italy', 'Denmark', 'Norway',
+      'Netherlands', 'Australia', 'Spain', 'Finland', 'Belgium',
+      'Switzerland', 'Korea, Rep.',
+      // Reference points for context (large/high-inequality economies)
+      'China', 'Brazil', 'India',
+    ]);
 
-    rows = [...top, ...bottom, ...all.filter((d) => keep.has(d.country))]
-      .filter((d, i, arr) => arr.findIndex((x) => x.country === d.country) === i)
-      .sort((a, b) => a.ige - b.ige)
-      .slice(0, 20);
+    rows = all
+      .filter((d) => KEEP.has(d.country))
+      .sort((a, b) => a.ige - b.ige);
   }
 
   function draw() {
@@ -69,8 +86,12 @@
       .call(d3.axisLeft(y).tickSize(0))
       .call((gg) => gg.select('.domain').remove())
       .call((gg) => gg.selectAll('text')
-        .attr('fill', (d) => d === 'United States' ? '#C0392B' : '#4b4b4b')
-        .attr('font-weight', (d) => d === 'United States' ? '700' : '500')
+        .attr('fill', (d) => {
+          if (d === 'United States') return '#C0392B';
+          if (PEERS.has(d)) return PEER_COLOR;
+          return '#4b4b4b';
+        })
+        .attr('font-weight', (d) => (d === 'United States' || PEERS.has(d)) ? '700' : '500')
         .attr('font-size', 11));
 
     g.append('line')
@@ -90,8 +111,44 @@
       .attr('width', (d) => x(d.ige))
       .attr('height', y.bandwidth())
       .attr('rx', 2)
-      .attr('fill', (d) => d.country === 'United States' ? '#C0392B' : '#5DADE2')
-      .attr('opacity', (d) => d.country === 'United States' ? 0.95 : 0.72);
+      .attr('fill', (d) => {
+        if (d.country === 'United States') return '#C0392B';
+        if (PEERS.has(d.country)) return PEER_COLOR;
+        return '#5DADE2';
+      })
+      .attr('opacity', (d) => {
+        if (d.country === 'United States') return 0.95;
+        if (PEERS.has(d.country)) return 0.85;
+        return 0.65;
+      });
+
+    // Inline rank callout for the U.S. bar so "near the bottom" in prose
+    // resolves to a concrete position number on the chart.
+    const usIdx = rows.findIndex((r) => r.country === 'United States');
+    if (usIdx >= 0) {
+      const us = rows[usIdx];
+      g.append('text')
+        .attr('x', x(us.ige) + 6)
+        .attr('y', y(us.country) + y.bandwidth() / 2 + 4)
+        .attr('font-size', 11)
+        .attr('font-weight', 700)
+        .attr('fill', '#C0392B')
+        .text(`U.S. — rank ${usIdx + 1} of ${rows.length}`);
+    }
+
+    // Small "peer" tags on the four named peer economies so the four bolded
+    // names in the footer text have a 1:1 visual anchor on the chart.
+    const peerRows = rows.filter((r) => PEERS.has(r.country));
+    g.selectAll('text.peer-tag')
+      .data(peerRows)
+      .join('text')
+      .attr('class', 'peer-tag')
+      .attr('x', (d) => x(d.ige) + 6)
+      .attr('y', (d) => y(d.country) + y.bandwidth() / 2 + 4)
+      .attr('font-size', 10)
+      .attr('font-weight', 700)
+      .attr('fill', PEER_COLOR)
+      .text('▸ peer');
 
     g.append('text')
       .attr('x', innerW / 2)

@@ -7,6 +7,11 @@
   let rows = $state([]);
   let tooltip = $state({ visible: false, x: 0, y: 0, country: '', market: 0, disp: 0, red: 0 });
 
+  // Nordic countries get a green accent so the prose mention of "Nordic" / "20+ pts"
+  // resolves visually to specific lines on the dumbbell.
+  const NORDIC = new Set(['Sweden', 'Denmark', 'Norway', 'Finland', 'Iceland']);
+  const NORDIC_COLOR = '#27AE60';
+
   async function loadData() {
     const [gdimRows, swiidRows] = await Promise.all([
       d3.csv(`${base}/data/GDIM_2023_03.csv`),
@@ -103,8 +108,12 @@
       .call(d3.axisLeft(y).tickSize(0))
       .call((gg) => gg.select('.domain').remove())
       .call((gg) => gg.selectAll('text')
-        .attr('fill', (d) => d === 'United States' ? '#C0392B' : '#4a4a4a')
-        .attr('font-weight', (d) => d === 'United States' ? '700' : '500')
+        .attr('fill', (d) => {
+          if (d === 'United States') return '#C0392B';
+          if (NORDIC.has(d)) return NORDIC_COLOR;
+          return '#4a4a4a';
+        })
+        .attr('font-weight', (d) => (d === 'United States' || NORDIC.has(d)) ? '700' : '500')
         .attr('font-size', 11));
 
     g.selectAll('line.link')
@@ -115,8 +124,9 @@
       .attr('x2', (d) => x(d.gini_mkt))
       .attr('y1', (d) => y(d.country) + y.bandwidth() / 2)
       .attr('y2', (d) => y(d.country) + y.bandwidth() / 2)
-      .attr('stroke', '#c7c7c7')
-      .attr('stroke-width', 2);
+      .attr('stroke', (d) => NORDIC.has(d.country) ? NORDIC_COLOR : '#c7c7c7')
+      .attr('stroke-width', (d) => NORDIC.has(d.country) ? 3 : 2)
+      .attr('opacity', (d) => NORDIC.has(d.country) ? 0.85 : 1);
 
     const dot = (cls, accessor, color) => g.selectAll(`circle.${cls}`)
       .data(rows)
@@ -160,6 +170,21 @@
       .attr('fill', '#555')
       .attr('font-weight', '600')
       .text('Gini (market income to disposable income after taxes/transfers)');
+
+    // Per-row "−N pts" labels on Nordic + U.S. rows so the prose mention of
+    // "20+ points" / "barely moves the needle" resolves to actual line lengths.
+    const annotated = rows.filter((d) => NORDIC.has(d.country) || d.country === 'United States');
+    g.selectAll('text.red-callout')
+      .data(annotated)
+      .join('text')
+      .attr('class', 'red-callout')
+      .attr('x', (d) => x(d.gini_disp) - 8)
+      .attr('y', (d) => y(d.country) + y.bandwidth() / 2 + 4)
+      .attr('text-anchor', 'end')
+      .attr('font-size', 10)
+      .attr('font-weight', 700)
+      .attr('fill', (d) => d.country === 'United States' ? '#C0392B' : NORDIC_COLOR)
+      .text((d) => `−${d.abs_red.toFixed(1)} pts`);
   }
 
   onMount(async () => {

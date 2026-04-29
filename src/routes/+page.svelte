@@ -17,7 +17,7 @@
     let autoPlayDone = $state(false);
     let autoPlayTimer = null;
     let heroVisible = $state(false);
-    let autoPlaying = false;  /* lock to prevent observer from changing currentStep */
+    let autoPlaying = $state(false);  /* drives Play / Replay button visibility + scroll-lock during animation */
 
     /* ─────────────────────────────────────────────
        NEW NARRATIVE STRUCTURE
@@ -30,47 +30,47 @@
         {
             id: 0,
             title: "The Geographic Lottery",
-            content: "For children born into low-income families, their adult economic success is highly dependent on their specific county of birth. Why does a zip code matter so much in the U.S.?",
+            content: "For children born into low-income families, where they grow up shapes who they become as adults. In the U.S., a county of birth can decide a lifetime.",
             transition: ""
         },
         {
             id: 1,
             title: "The Privilege Shield",
-            content: "Here's the striking part: geography barely matters if you're born rich. Kids from wealthy families end up near the top no matter where they grow up. But for kids born poor, their county of birth makes all the difference. The map on the right shows this gap — each dot is a county, and the further it falls from the diagonal, the bigger the gap between rich and poor kids' outcomes.",
+            content: "Each dot on the right is a U.S. county. The dashed line is where poor and rich children would end up at the same percentile — perfect equal opportunity. Instead, the cloud sags far below it. The labelled red dots are counties where being born poor cuts a child's adult percentile by 50 points or more. Geography barely touches kids born rich; it crushes kids born poor.",
             transition: "So geography traps poor kids. But is this getting better or worse over time?"
         },
         {
             id: 2,
             title: "A Fading Dream",
-            content: "Worse. We compared two groups: kids born in 1978 and kids born in 1992. In much of the South and Midwest, the younger generation actually has lower odds of climbing up than their parents did. The places that needed more opportunity got less.",
-            transition: "Three facts from U.S. county data: birthplace predicts destiny, wealth insulates, and the problem is getting worse. But why? One concrete clue lies in how America funds its schools."
+            content: "Hit ▶ Play to compare two cohorts: kids born in 1978 against kids born in 1992. Watch the red bloom across the regions labelled SOUTH and MIDWEST — counties where the younger generation has worse mobility than their parents. The places that already had the least opportunity lost more.",
+            transition: "Three facts from U.S. county data: birthplace predicts destiny, wealth insulates, and the problem is getting worse. Why? One concrete clue lies in how America funds its schools."
         },
 
         /* ── Bridge: From U.S. mechanism to global lens ── */
         {
             id: 3,
             title: "The Local Funding Trap",
-            content: "In most developed countries, schools are funded centrally — every child gets similar resources. In the U.S., 91% of education funding comes from local taxes. Poor places collect less, spend less, and pass fewer opportunities to the next generation.",
-            transition: "Education funding is one mechanism, but it points to a larger pattern. Do countries with more unequal societies systematically produce less mobility? Let's zoom out."
+            content: "Compare the bars on the right: blue is central or federal funding, red is local property-tax funding. The U.S. row is almost entirely red — about 91% of K–12 funding is raised locally. Norway, Sweden, and Japan are the opposite. When schooling depends on the wealth of the surrounding ZIP code, poor places stay poor.",
+            transition: "Education funding is one mechanism, but it points to a larger pattern. Do unequal societies systematically produce less mobility? Let's zoom out."
         },
 
         /* ── Act II: The Global Perspective ── */
         {
             id: 4,
             title: "The Global Pattern",
-            content: "Plotting inequality against immobility for dozens of countries reveals a clear relationship: the more unequal a society, the harder it is to climb. The U.S. sits with high inequality and low mobility — far from Nordic benchmarks.",
-            transition: "What separates high-mobility countries from the rest? The answer is redistribution — how much policy intervenes between market outcomes and what families actually experience."
+            content: "Each bubble is a country. X-axis: how unequal incomes are after taxes. Y-axis: how immobile children are between generations. The dashed trendline slopes up — more inequality, less mobility. The red dot in the upper right is the U.S. The green NORDIC BENCHMARKS cluster sits in the opposite corner: less unequal, more mobile.",
+            transition: "What separates high-mobility countries from the rest? The answer is redistribution — how much policy intervenes between market outcomes and what families actually live."
         },
         {
             id: 5,
             title: "The Redistribution Gap",
-            content: "Each line shows how far a country moves from market inequality to after-tax inequality. Nordic countries cut their Gini by 20+ points through taxes and transfers. The U.S. barely moves the needle.",
+            content: "Each line spans from market Gini (orange) to after-tax Gini (blue) — the longer the line, the more taxes and transfers compress inequality. The green Nordic lines drop by 20+ points. The U.S. line is short: market inequality is barely softened by policy.",
             transition: "Putting it all together — where does the U.S. rank among its peers?"
         },
         {
             id: 6,
             title: "Where America Stands",
-            content: "Ranked by intergenerational immobility, the U.S. falls near the bottom of developed nations. Higher mobility is not a mystery — it exists in countries that chose different policies.",
+            content: "The chart on the right ranks twenty major economies by intergenerational immobility — shorter bars mean kids escape their parents' income bracket more easily. The U.S. sits at rank 10, with nine wealthy peers above it: Canada, Australia, Sweden, Finland, the United Kingdom, Japan, Korea, the Netherlands, and Switzerland. Every one of them gives their poor children a better shot than America does. The four highlighted in deep blue (Canada, Sweden, the United Kingdom, Japan) are the most-cited cultural benchmarks.",
             transition: ""
         }
     ];
@@ -97,15 +97,16 @@
     let autoPlayTimers = [];
 
     function startAutoPlay() {
-        if (autoPlayDone || autoPlaying) return;
+        if (autoPlaying) return;
         autoPlaying = true;
+        autoPlayDone = false;
         currentStep = 0;
         mapStep = 0;
 
         const schedule = [
-            { delay: 4000, step: 1 },
-            { delay: 8500, step: 2 },
-            { delay: 13000, step: 3 },
+            { delay: 3500, step: 1 },
+            { delay: 7000, step: 2 },
+            { delay: 10500, step: 3 },
         ];
 
         schedule.forEach(({ delay, step }) => {
@@ -118,49 +119,87 @@
         const tDone = setTimeout(() => {
             autoPlayDone = true;
             autoPlaying = false;
-        }, 16000);
+        }, 13500);
         autoPlayTimers.push(tDone);
+    }
+
+    function replayAutoPlay() {
+        autoPlayTimers.forEach(t => clearTimeout(t));
+        autoPlayTimers = [];
+        autoPlayDone = false;
+        autoPlaying = false;
+        mapStep = 0;
+        // small tick so the DOM observes the reset before re-firing
+        setTimeout(() => startAutoPlay(), 60);
     }
 
     onMount(() => {
         heroVisible = true;
         currentStep = 0;
 
+        let scrollPending = false;
+        let stepEls = [];
+
+        // Pure function of current scroll position: which step element
+        // contains the viewport-center reference line. Deterministic and
+        // direction-agnostic, so scrolling up gives the same answer as
+        // scrolling down through the same Y.
+        function computeActiveStep() {
+            const refY = window.innerHeight / 2;
+            let insideId = -1;
+            let closestId = 0;
+            let closestDist = Infinity;
+
+            for (const el of stepEls) {
+                const rect = el.getBoundingClientRect();
+                const id = parseInt(el.getAttribute('data-step') ?? '0');
+                if (rect.top <= refY && rect.bottom >= refY) insideId = id;
+                const center = (rect.top + rect.bottom) / 2;
+                const dist = Math.abs(center - refY);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestId = id;
+                }
+            }
+            return insideId !== -1 ? insideId : closestId;
+        }
+
+        // Step tracking is purely scroll-position-based. The Step 0 map
+        // animation is NEVER auto-triggered from scroll — it only fires
+        // when the user clicks the explicit ▶ Play button. This avoids
+        // the fast-scroll race conditions that plagued the previous build.
+        function updateActiveStep() {
+            const next = computeActiveStep();
+            if (autoPlaying) {
+                // Keep the right panel pinned to the Scrollymap while the
+                // animation is running, so scrolling can't yank the chart
+                // out from under the reveal.
+                if (next === 0) currentStep = 0;
+                return;
+            }
+            if (next !== currentStep) currentStep = next;
+        }
+
+        function onScroll() {
+            if (scrollPending) return;
+            scrollPending = true;
+            requestAnimationFrame(() => {
+                scrollPending = false;
+                updateActiveStep();
+            });
+        }
+
         requestAnimationFrame(() => {
-            const heroEl = document.querySelector('.hero');
-            let heroPassed = false;
-
-            const heroObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting) {
-                        heroPassed = true; 
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            if (heroEl) heroObserver.observe(heroEl);
-
-            const outerObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const step = parseInt(entry.target.getAttribute('data-step') ?? '0');
-                        if (autoPlaying) {
-                            if (step === 0) currentStep = 0;
-                            return;
-                        }
-                        currentStep = step;
-                        if (step === 0 && !autoPlayDone && heroPassed) {
-                            startAutoPlay();
-                        }
-                    }
-                });
-            }, { rootMargin: '-20% 0px -45% 0px', threshold: 0.25 });
-
-            document.querySelectorAll('.step').forEach(el => outerObserver.observe(el));
+            stepEls = Array.from(document.querySelectorAll('.step'));
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll);
+            updateActiveStep();
         });
 
         return () => {
             autoPlayTimers.forEach(t => clearTimeout(t));
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onScroll);
         };
     });
 </script>
@@ -184,7 +223,7 @@
 <div class="layout">
     <div class="story">
 
-        <!-- ── Step 0: Auto-play map narration ── -->
+        <!-- ── Step 0: Button-triggered map narration ── -->
         <div class="step step-0-auto" data-step={0} class:active={currentStep === 0}>
             <div class="auto-narration">
                 {#each MAP_STEPS as stepDef (stepDef.id)}
@@ -200,9 +239,32 @@
                     </div>
                 {/each}
             </div>
-            <!-- Scroll guide after auto-play -->
+
+            <!-- Play button: explicit user trigger, never scroll-driven -->
+            {#if !autoPlaying && !autoPlayDone}
+                <div class="play-button-wrap" in:fade>
+                    <button class="play-button" onclick={startAutoPlay} aria-label="Play the map animation">
+                        <span class="play-icon">▶</span>
+                        <span class="play-label">Play the map animation</span>
+                    </button>
+                    <p class="play-hint">Click to watch how mobility maps onto American geography</p>
+                </div>
+            {/if}
+
+            <!-- Live progress indicator while playing -->
+            {#if autoPlaying}
+                <div class="play-status" in:fade>
+                    <span class="play-status-dot"></span>
+                    <span>Playing... {mapStep + 1} of {MAP_STEPS.length}</span>
+                </div>
+            {/if}
+
+            <!-- After-play scroll guide + replay -->
             {#if autoPlayDone}
                 <div class="scroll-guide" in:fade>
+                    <button class="replay-button" onclick={replayAutoPlay} aria-label="Replay the map animation">
+                        <span>↻ Replay animation</span>
+                    </button>
                     <div class="scroll-guide-line"></div>
                     <p>But geography is only the beginning of the story</p>
                     <p class="scroll-guide-hint">Scroll down to explore why</p>
@@ -245,8 +307,8 @@
 
         <div class="footer">
             <h2>The Bottom Line</h2>
-            <p>Birthplace determines destiny — but it doesn't have to. The counties where poor children stay stuck, the widening gap over time, and America's outlier status among developed nations all point to the same conclusion: this is a policy choice, not an inevitability.</p>
-            <p class="footer-sub">Countries that invest in universal education funding, progressive taxation, and social transfers have cracked the code. The question is whether America will choose to follow.</p>
+            <p>Look at the rank chart still on the right. Nine wealthy peers sit above the red U.S. bar — <strong>Canada, Sweden, the United Kingdom, Japan</strong> (marked in deep blue), plus Australia, Finland, Korea, the Netherlands, and Switzerland. Every one of them gives their poor children a better shot than America does. The gap is not destiny: those countries pay for schools, tax incomes, and support families differently than the U.S. does.</p>
+            <p class="footer-sub">Birthplace shapes a child's life — in the U.S. especially so — but the international ranking shows the ceiling can be moved by countries with comparable means. The question is which of those choices America is willing to copy.</p>
         </div>
     </div>
 
@@ -387,11 +449,17 @@
     }
 
     .footer {
-        min-height: 60vh;
+        /* Match step height (100vh) so footer text spans the same vertical
+           extent as the sticky chart in the right panel.
+           justify-content: flex-start (instead of center) keeps the heading
+           anchored to the top of the viewport — same y position as the
+           sticky chart card's top — so chart and text read as one row
+           instead of "chart floating above, text drifting below". */
+        min-height: 100vh;
         padding: 4rem 0;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .footer h2 {
@@ -432,17 +500,21 @@
     }
 
     .step:not(.step-0-auto) {
-        min-height: 80vh;
+        min-height: 100vh;
         padding: 4rem 0;
     }
 
-    /* ── Step 0 auto-play ── */
+    /* ── Step 0 button-triggered narration ── */
+    /* Lock to 100vh so layout never reflows mid-scroll: the section
+       always occupies one full screen, regardless of how many narration
+       cards are revealed. This prevents the fast-scroll race where the
+       section was ~150px tall before play and ~900px during play. */
     .step-0-auto {
-        min-height: auto;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        padding: 2rem 0;
+        padding: 4rem 0;
     }
 
     .auto-narration {
@@ -568,6 +640,97 @@
     @keyframes bounceDown {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(12px); }
+    }
+
+    /* ── Play / Replay buttons (Step 0 manual trigger) ── */
+    .play-button-wrap {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .play-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.95rem 2.2rem;
+        background: #e63946;
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(230, 57, 70, 0.28);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        animation: playPulse 2.4s ease-in-out infinite;
+    }
+    .play-button:hover {
+        background: #d62839;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(230, 57, 70, 0.4);
+    }
+    .play-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(230, 57, 70, 0.35);
+    }
+    .play-icon {
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+    .play-label {
+        letter-spacing: 0.01em;
+    }
+    .play-hint {
+        font-size: 0.85rem \!important;
+        color: #7b8a8b \!important;
+        margin: 0 \!important;
+        max-width: 36ch;
+    }
+    @keyframes playPulse {
+        0%, 100% { box-shadow: 0 4px 16px rgba(230, 57, 70, 0.28); }
+        50%      { box-shadow: 0 4px 16px rgba(230, 57, 70, 0.28), 0 0 0 8px rgba(230, 57, 70, 0.10); }
+    }
+
+    .play-status {
+        margin-top: 1.4rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.9rem;
+        color: #5e6f77;
+        font-weight: 500;
+    }
+    .play-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #e63946;
+        animation: dotBlink 1s ease-in-out infinite;
+    }
+    @keyframes dotBlink {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.25; }
+    }
+
+    .replay-button {
+        background: transparent;
+        color: #e63946;
+        border: 2px solid #e63946;
+        padding: 0.55rem 1.4rem;
+        border-radius: 24px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 1.2rem;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+    .replay-button:hover {
+        background: #e63946;
+        color: #fff;
+        transform: translateY(-1px);
     }
 
     /* ── Transition notes ── */
