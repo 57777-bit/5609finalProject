@@ -175,6 +175,15 @@
   <h3>Redistribution Dumbbell</h3>
   <p class="subtitle">How far each country moves from market inequality to disposable inequality.</p>
 
+  <div class="how-to-read">
+    <span class="htr-label">How to read</span>
+    <ul>
+      <li><strong>Orange dot (right) — Market Gini:</strong> Lorenz curve applied to pre-tax, pre-transfer income — raw labor market inequality before any government intervention.</li>
+      <li><strong>Blue dot (left) — Disposable Gini:</strong> same Lorenz curve method applied to post-tax, post-transfer income — what families actually take home.</li>
+      <li><strong>Line length</strong> = Market Gini − Disposable Gini = the redistribution effect. Longer = stronger policy intervention. Sorted by largest reduction.</li>
+    </ul>
+  </div>
+
   <div class="svg-wrap">
     <svg bind:this={svgEl} style="width:100%;display:block;"></svg>
 
@@ -208,7 +217,36 @@
     box-sizing: border-box;
   }
   h3 { margin: 0; font-size: 1.15rem; color: #2c3e50; }
-  .subtitle { margin: 4px 0 8px; font-size: 0.84rem; color: #7b8a8b; }
+  .subtitle { margin: 4px 0 6px; font-size: 0.84rem; color: #7b8a8b; }
+
+  .how-to-read {
+    background: #f0f4f8;
+    border-left: 3px solid #2471A3;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 12px;
+    margin-bottom: 8px;
+    font-size: 0.76rem;
+    color: #4a5568;
+    line-height: 1.5;
+  }
+
+  .htr-label {
+    display: block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.67rem;
+    color: #2471A3;
+    margin-bottom: 4px;
+  }
+
+  .how-to-read ul {
+    margin: 0;
+    padding-left: 14px;
+  }
+
+  .how-to-read li { margin: 2px 0; }
+
   .svg-wrap { position: relative; flex-grow: 1; min-height: 0; }
   .tooltip {
     position: absolute;

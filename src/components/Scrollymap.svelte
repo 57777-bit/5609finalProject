@@ -6,7 +6,8 @@
     {
       id: 0,
       title: "The Geographic Lottery",
-      content: "For children born into low-income families, their adult economic success is highly dependent on their specific county of birth. Why does a zip code matter so much in the U.S.?"
+      content: "For children born into low-income families, their adult economic success is highly dependent on their specific county of birth. Why does a zip code matter so much in the U.S.?",
+      note: "How to read: each county is shaded by the income percentile rank that children born to the poorest families (bottom 1%) reach as adults. A score of 50 means they hit the national median — below 40 means they stayed near the bottom."
     },
     {
       id: 1,

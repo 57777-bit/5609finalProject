@@ -37,7 +37,10 @@
             id: 1,
             title: "The Privilege Shield",
             content: "Geography punishes the poor far more than it constrains the rich. Across U.S. counties, children from wealthy families end up near the top almost everywhere. For children born poor, the county they're born in makes all the difference.",
-            transition: "If where you're born locks in your fate, is the lock at least loosening over time?"
+            transition: "If where you're born locks in your fate, is the lock at least loosening over time?",
+            measures: [
+                { term: "Income percentile rank", def: "Calculated by ranking children's household income at ~age 35 within their national birth cohort. 1 = poorest, 100 = richest. This chart compares outcomes for children born poor vs. rich in the same county — a wide vertical gap means geography helps the wealthy but not the poor." }
+            ]
         },
         {
             id: 2,
@@ -59,13 +62,21 @@
             id: 4,
             title: "The Global Pattern",
             content: "Plotting inequality against immobility for dozens of countries reveals a clear relationship: the more unequal a society, the harder it is to climb. The U.S. sits with high inequality and low mobility — far from Nordic benchmarks.",
-            transition: "What separates high-mobility countries from the rest? The answer is redistribution — how much policy intervenes between market outcomes and what families actually experience."
+            transition: "What separates high-mobility countries from the rest? The answer is redistribution — how much policy intervenes between market outcomes and what families actually experience.",
+            measures: [
+                { term: "Gini coefficient", def: "Calculated from the Lorenz curve — the further actual incomes deviate from a perfectly equal distribution, the higher the score. 0 = everyone earns identically; 1 = one person earns everything. Values above 0.35 are considered high inequality." },
+                { term: "IGE β (Intergenerational Elasticity)", def: "Calculated as the slope of an OLS regression of log(child income) on log(parent income). A β of 0.45 means a 1% higher parent income predicts a 0.45% higher child income. 0 = no link (perfect mobility); 1 = income fully inherited." }
+            ]
         },
         {
             id: 5,
             title: "The Redistribution Gap",
             content: "Each line shows how far a country moves from market inequality to after-tax inequality. Nordic countries cut their Gini by 20+ points through taxes and transfers. The U.S. barely moves the needle.",
-            transition: "Putting it all together — where does the U.S. rank among its peers?"
+            transition: "Putting it all together — where does the U.S. rank among its peers?",
+            measures: [
+                { term: "Market Gini", def: "Lorenz curve applied to pre-tax, pre-transfer income — raw labor market inequality before any government intervention." },
+                { term: "Disposable Gini", def: "Same Lorenz curve method applied to post-tax, post-transfer household income (after welfare, pensions, and subsidies) — what families actually take home. Market Gini − Disposable Gini = the redistribution effect; larger gap = stronger policy intervention." }
+            ]
         },
         {
             id: 6,
@@ -76,13 +87,13 @@
     ];
 
     const vizGuide = {
-        0: "Watch how birthplace shapes opportunity — the map reveals itself automatically.",
-        1: "Compare county outcomes: X-axis = children born poor, Y-axis = children born rich. Points far from the diagonal show large gaps.",
-        2: "Blue counties = mobility improved (1978→1992). Red counties = mobility worsened. Toggle views to compare.",
-        3: "Compare who pays for schools: blue = central/federal funding, red = local/state funding.",
-        4: "Each bubble is a country. X = inequality (Gini), Y = immobility (IGE). The U.S. is highlighted.",
-        5: "Each line spans from market Gini to disposable Gini. Longer lines = stronger redistribution.",
-        6: "Countries ranked by immobility (IGE). Lower bars = higher mobility. U.S. highlighted in red."
+        0: "Each county is shaded by the income percentile rank children born poor (bottom 1%) reach as adults. Below 40th = stuck near the bottom; 40–50th = treading water; above 50th = climbing past the median.",
+        1: "Each dot is a county. X-axis = adult income rank for children born poor (bottom 25%); Y-axis = rank for children born rich (top 25%). A wide vertical gap means geography helps the rich but not the poor.",
+        2: "Blue counties = upward mobility improved between 1978 and 1992 birth cohorts. Red = it worsened. Same income percentile rank metric as the opening map.",
+        3: "Bar length = share of school funding from each source. Central funding (blue) gives every child equal resources; local funding (red) ties school quality to neighborhood wealth.",
+        4: "X-axis: Gini coefficient — 0 means everyone earns equally, 1 means one person earns everything. Y-axis: IGE β — 0 means parents' income has no effect on children (perfect mobility), 1 means income is fully inherited. Higher-right = more unequal and less mobile.",
+        5: "Each line connects a country's market Gini (inequality before taxes/transfers) to its disposable Gini (after). A longer line means stronger redistribution. The U.S. line is notably short.",
+        6: "Countries sorted by IGE β — the fraction of parental income advantage passed to children. Lower = higher mobility. The U.S. ranks near the bottom among developed peers."
     };
 
     function scrollToCard(stepId) {
@@ -170,6 +181,9 @@
                     <div class="narration-card" class:card-visible={mapStep >= stepDef.id}>
                         <h2>{stepDef.title}</h2>
                         <p>{stepDef.content}</p>
+                        {#if stepDef.note}
+                            <p class="step-note">{stepDef.note}</p>
+                        {/if}
                         {#if stepDef.statNum}
                             <div class="stat-block" style="--stat-color: {stepDef.statColor}">
                                 <span class="stat-num">{stepDef.statNum}</span>
@@ -203,6 +217,17 @@
             <div class="step" data-step={step.id} class:active={currentStep === step.id}>
                 <h2>{step.title}</h2>
                 <p>{step.content}</p>
+                {#if step.measures?.length}
+                    <div class="measure-defs">
+                        {#each step.measures as m}
+                            <div class="measure-pill">
+                                <span class="measure-term">{m.term}</span>
+                                <span class="measure-def">{m.def}</span>
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
+
                 {#if step.transition}
                     <div class="transition-note">{step.transition}</div>
                 {/if}
@@ -499,6 +524,47 @@
     @keyframes bounceDown {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(12px); }
+    }
+
+    /* ── Measure definition cards ── */
+    .measure-defs {
+        margin-top: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .measure-pill {
+        padding: 0.55rem 0.9rem;
+        background: rgba(36, 113, 163, 0.06);
+        border-left: 3px solid #2471A3;
+        border-radius: 0 6px 6px 0;
+    }
+
+    .measure-term {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #2471A3;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.2rem;
+    }
+
+    .measure-def {
+        display: block;
+        font-size: 0.85rem;
+        color: #555;
+        line-height: 1.45;
+    }
+
+    /* ── How-to-read note on narration cards ── */
+    .step-note {
+        margin-top: 0.6rem;
+        font-size: 0.82rem \!important;
+        color: #6b7280 \!important;
+        line-height: 1.45;
+        font-style: italic;
     }
 
     /* ── Transition notes ── */

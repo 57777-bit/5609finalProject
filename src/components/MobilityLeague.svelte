@@ -115,6 +115,16 @@
 <div class="chart-wrapper">
   <h3>Mobility League Table</h3>
   <p class="subtitle">Lower IGE means higher mobility. The U.S. is highlighted in red.</p>
+
+  <div class="how-to-read">
+    <span class="htr-label">How to read</span>
+    <ul>
+      <li><strong>Bar length — IGE β:</strong> calculated as the slope of an OLS regression of log(child income) on log(parent income) — captures what fraction of a parent's income advantage is passed to their child.</li>
+      <li><strong>Shorter bar = more mobile</strong> — a 1% higher parent income predicts little change in child income; children can climb regardless of birth.</li>
+      <li><strong>Longer bar = more stuck</strong> — income advantage reliably passes down; the regression slope is steep.</li>
+    </ul>
+  </div>
+
   <svg bind:this={svgEl} style="width:100%;display:block;"></svg>
   <div class="source">Source: GDIM 2023 (parent=avg, child=all)</div>
 </div>
@@ -132,7 +142,36 @@
     box-sizing: border-box;
   }
   h3 { margin: 0; font-size: 1.15rem; color: #2c3e50; }
-  .subtitle { margin: 4px 0 8px; font-size: 0.84rem; color: #7b8a8b; }
+  .subtitle { margin: 4px 0 6px; font-size: 0.84rem; color: #7b8a8b; }
+
+  .how-to-read {
+    background: #f0f4f8;
+    border-left: 3px solid #2471A3;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 12px;
+    margin-bottom: 8px;
+    font-size: 0.76rem;
+    color: #4a5568;
+    line-height: 1.5;
+  }
+
+  .htr-label {
+    display: block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.67rem;
+    color: #2471A3;
+    margin-bottom: 4px;
+  }
+
+  .how-to-read ul {
+    margin: 0;
+    padding-left: 14px;
+  }
+
+  .how-to-read li { margin: 2px 0; }
+
   .source {
     border-top: 1px solid #ecf0f1;
     margin-top: 8px;
