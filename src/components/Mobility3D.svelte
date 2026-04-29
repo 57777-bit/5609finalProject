@@ -63,7 +63,7 @@
     const allValues = columns.map((c) => c.value).sort(d3.ascending);
     const lo = d3.quantile(allValues, 0.05);
     const hi = d3.quantile(allValues, 0.95);
-    const colorScale = d3.scaleSequential([lo, hi], d3.interpolateRdBu);
+    const colorScale = d3.scaleSequential([lo, hi], d3.interpolateOrRd);
 
     function rgbaFor(v) {
       const c = d3.color(colorScale(v));
