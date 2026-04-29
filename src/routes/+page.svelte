@@ -343,8 +343,7 @@
 
         <div class="footer">
             <h2>The Bottom Line</h2>
-            <p>Look at the rank chart still on the right. Nine wealthy peers sit above the red U.S. bar — <strong>Canada, Sweden, the United Kingdom, Japan</strong> (marked in deep blue), plus Australia, Finland, Korea, the Netherlands, and Switzerland. Every one of them gives their poor children a better shot than America does. The gap is not destiny: those countries pay for schools, tax incomes, and support families differently than the U.S. does.</p>
-            <p class="footer-sub">Birthplace shapes a child's life — in the U.S. especially so — but the international ranking shows the ceiling can be moved by countries with comparable means. The question is which of those choices America is willing to copy.</p>
+            <p>With the 3D visual on the right, you can truly comprehend the magnitude of the mobility gap between different counties. We saw that wealthy peers of the US could provide mobility. The question is if the US can make the proper changes to do it as well.</p>
         </div>
     </div>
 
