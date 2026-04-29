@@ -369,24 +369,46 @@
       .text("Children's income percentile (parents at P100)");
 
     // points
-    const dots = g.selectAll('circle')
-      .data(sampledData)
+    // const dots = g.selectAll('circle')
+    //   .data(sampledData)
+    //   .join('circle')
+    //   .attr('cx', d => x(d.kfr_pooled_pooled_p1_1978))
+    //   .attr('cy', d => y(d.kfr_pooled_pooled_p100_1978))
+    //   .attr('r', 4.5)
+    //   .attr('fill', d =>
+    //     gapColor(d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978)
+    //   )
+    //   .attr('opacity', 0.72)
+    //   .attr('stroke', '#fff')
+    //   .attr('stroke-width', 0.6);
+    const sortedData = [...sampledData].sort(
+      (a, b) => a.kfr_pooled_pooled_p1_1978 - b.kfr_pooled_pooled_p1_1978
+    );
+
+    g.selectAll('circle')
+      .data(sortedData)
       .join('circle')
       .attr('cx', d => x(d.kfr_pooled_pooled_p1_1978))
       .attr('cy', d => y(d.kfr_pooled_pooled_p100_1978))
-      .attr('r', 4.5)
+      .attr('r', 0)
+      .attr('opacity', 0)
       .attr('fill', d =>
         gapColor(d.kfr_pooled_pooled_p100_1978 - d.kfr_pooled_pooled_p1_1978)
       )
-      .attr('opacity', 0.72)
       .attr('stroke', '#fff')
-      .attr('stroke-width', 0.6);
+      .attr('stroke-width', 0.6)
+      .transition()
+      .delay((_, i) => i * 3)
+      .duration(300)
+      .ease(d3.easeCubicOut)
+      .attr('r', 4.5)
+      .attr('opacity', 0.72);
 
-    // 3) hover dimming
-    dots
+    const dotSelection = g.selectAll('circle');
+
+    dotSelection
       .on('mouseover', function (event, d) {
-        dots.transition().duration(150).attr('opacity', 0.08);
-
+        dotSelection.transition().duration(150).attr('opacity', 0.08);
         d3.select(this)
           .raise()
           .transition()
@@ -395,7 +417,6 @@
           .attr('opacity', 1)
           .attr('stroke', '#333')
           .attr('stroke-width', 1.5);
-
         tooltip = {
           visible: true,
           x: event.offsetX + 12,
@@ -408,26 +429,21 @@
         };
       })
       .on('mousemove', function (event) {
-        tooltip = {
-          ...tooltip,
-          x: event.offsetX + 12,
-          y: event.offsetY - 28
-        };
+        tooltip = { ...tooltip, x: event.offsetX + 12, y: event.offsetY - 28 };
       })
       .on('mouseout', function () {
-        dots.transition().duration(180)
+        dotSelection.transition().duration(180)
           .attr('r', 4.5)
           .attr('opacity', 0.72)
           .attr('stroke', '#fff')
           .attr('stroke-width', 0.6);
-
         tooltip = { ...tooltip, visible: false };
       });
 
     // 4) annotation
     g.append('text')
       .attr('x', innerW / 2)
-      .attr('y', 35)
+      .attr('y', 15)
       .attr('text-anchor', 'middle')
       .style('font-size', '12px')
       .style('fill', '#777')
@@ -461,6 +477,12 @@
 
     const legend = g.append('g')
       .attr('transform', `translate(${legendX},${legendY})`);
+
+    svg.selectAll('.tick, .domain')
+      .style('opacity', 0)
+      .transition()
+      .duration(600)
+      .style('opacity', 1);
 
     legend.append('rect')
       .attr('width', legendWidth)

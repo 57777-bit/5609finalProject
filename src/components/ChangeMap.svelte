@@ -180,7 +180,7 @@
 </style> -->
 
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { base } from '$app/paths';
   import * as d3 from 'd3';
   import * as topojson from 'topojson-client';
@@ -191,6 +191,9 @@
   let activeMode = $state('change');   // 'p1' | 'p100' | 'change'
   let data = $state(null);
   let geoData = $state(null);
+  let isPlaying = $state(false);
+  let progress = $state(0); // 0 = 1978, 1 = 1992
+  let animTimer = null;
 
   const modes = [
     {
@@ -229,195 +232,329 @@
     isLoading = false;
   });
 
-  $effect(() => {
-    if (data && geoData && svgEl) drawMap();
-  });
+  let updateFill = null;
 
   $effect(() => {
-    activeMode;
-    if (data && geoData && svgEl) drawMap();
+    if (data && geoData && svgEl) {
+      updateFill = drawMap();
+    }
   });
+
+  function playAnimation() {
+    if (isPlaying) return;
+    isPlaying = true;
+    progress = 0;
+    updateFill?.('reset'); 
+
+    const totalDuration = 2500; 
+    const start = performance.now();
+
+    function tick(now) {
+      const t = Math.min((now - start) / totalDuration, 1);
+      progress = t;
+      updateFill?.(t);
+      if (t < 1) {
+        animTimer = requestAnimationFrame(tick);
+      } else {
+        isPlaying = false;
+      }
+    }
+    animTimer = requestAnimationFrame(tick);
+  }
+
+  function resetAnimation() {
+    if (animTimer) cancelAnimationFrame(animTimer);
+    isPlaying = false;
+    progress = 0;
+    d3.select(svgEl).style('opacity', 1);
+    updateFill?.(0);
+  }
+
+  onDestroy(() => {
+    if (animTimer) cancelAnimationFrame(animTimer);
+  });
+
+  // function drawMap() {
+  //   const mode = modes.find(m => m.key === activeMode);
+  //   const field = mode.field;
+
+  //   const valueMap = new Map(
+  //     data
+  //       .filter(d => d[field] != null)
+  //       .map(d => [d.fips, +d[field]])
+  //   );
+
+  //   const values = [...valueMap.values()];
+  //   let domainLo, domainMid, domainHi;
+
+  //   if (mode.diverging) {
+  //     const absMax = d3.quantile(values.map(Math.abs).sort(d3.ascending), 0.95);
+  //     domainLo = -absMax; domainMid = 0; domainHi = absMax;
+  //   } else {
+  //     const sorted = values.slice().sort(d3.ascending);
+  //     domainLo = d3.quantile(sorted, 0.05);
+  //     domainMid = d3.quantile(sorted, 0.5);
+  //     domainHi = d3.quantile(sorted, 0.95);
+  //   }
+
+  //   const colorScale = d3.scaleDiverging()
+  //     .domain([domainLo, domainMid, domainHi])
+  //     .interpolator(d3.interpolateRdBu);
+
+  //   const svg = d3.select(svgEl);
+  //   svg.selectAll('*').remove();
+
+  //   const width = svgEl.clientWidth || 900;
+  //   const height = width * 0.6;
+  //   svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+  //   const counties = topojson.feature(geoData, geoData.objects.counties);
+  //   const projection = d3.geoAlbersUsa().fitSize([width, height], counties);
+  //   const path = d3.geoPath().projection(projection);
+  //   const g = svg.append('g');
+
+  //   g.selectAll('path')
+  //     .data(counties.features)
+  //     .join('path')
+  //     .attr('d', path)
+  //     .attr('fill', d => {
+  //       const val = valueMap.get(d.id);
+  //       return val != null ? colorScale(val) : '#ddd';
+  //     })
+  //     .attr('stroke', '#fff')
+  //     .attr('stroke-width', 0.3)
+  //     .on('mouseover', function (event, d) {
+  //       const val = valueMap.get(d.id);
+  //       const info = data.find(r => r.fips === d.id);
+  //       d3.select(this).attr('stroke', '#222').attr('stroke-width', 1.8);
+
+  //       let valueLabel = 'No data';
+  //       let rankLabel = '';
+  //       if (val != null) {
+  //         if (mode.diverging) {
+  //           valueLabel = (val > 0 ? '+' : '') + (val * 100).toFixed(1) + ' percentile pts';
+  //           rankLabel = val > 0 ? 'Improving' : 'Worsening';
+  //         } else {
+  //           valueLabel = 'Income rank: ' + (val * 100).toFixed(1) + 'th percentile';
+  //           rankLabel = val > 0.5 ? 'Above national median' : 'Below national median';
+  //         }
+  //       }
+
+  //       tooltip = {
+  //         visible: true,
+  //         x: event.offsetX + 14,
+  //         y: event.offsetY - 36,
+  //         name: info?.county_name ?? 'Unknown county',
+  //         state: info?.state_name ?? '',
+  //         value: valueLabel,
+  //         rank: rankLabel,
+  //       };
+  //     })
+  //     .on('mousemove', function (event) {
+  //       tooltip = { ...tooltip, x: event.offsetX + 14, y: event.offsetY - 36 };
+  //     })
+  //     .on('mouseout', function () {
+  //       d3.select(this).attr('stroke', '#fff').attr('stroke-width', 0.3);
+  //       tooltip = { ...tooltip, visible: false };
+  //     });
+
+  //   // State borders
+  //   g.append('path')
+  //     .datum(topojson.mesh(geoData, geoData.objects.states, (a, b) => a !== b))
+  //     .attr('d', path)
+  //     .attr('fill', 'none')
+  //     .attr('stroke', '#fff')
+  //     .attr('stroke-width', 1);
+
+  //   // Legend
+  //   const legendWidth = 240;
+  //   const legendHeight = 10;
+  //   const legendX = width - legendWidth - 20;
+  //   const legendY = height - 44;
+
+  //   const defs = svg.append('defs');
+  //   const grad = defs.append('linearGradient').attr('id', 'legend-grad');
+
+  //   const stops = d3.range(0, 1.01, 0.05);
+  //   grad.selectAll('stop')
+  //     .data(stops)
+  //     .join('stop')
+  //     .attr('offset', d => d)
+  //     .attr('stop-color', d => colorScale(domainLo + d * (domainHi - domainLo)));
+
+  //   svg.append('rect')
+  //     .attr('x', legendX).attr('y', legendY)
+  //     .attr('width', legendWidth).attr('height', legendHeight)
+  //     .style('fill', 'url(#legend-grad)')
+  //     .attr('rx', 3);
+
+  //   const legendLabels = mode.diverging
+  //     ? ['Worsening', 'No change', 'Improving']
+  //     : ['Low mobility', 'Median', 'High mobility'];
+
+  //   legendLabels.forEach((label, i) => {
+  //     svg.append('text')
+  //       .attr('x', legendX + (i * legendWidth / 2))
+  //       .attr('y', legendY + 24)
+  //       .attr('text-anchor', i === 0 ? 'start' : i === 1 ? 'middle' : 'end')
+  //       .style('font-size', '10px')
+  //       .style('fill', '#555')
+  //       .text(label);
+  //   });
+
+  //   svg.append('text')
+  //     .attr('x', legendX)
+  //     .attr('y', legendY - 7)
+  //     .style('font-size', '11px')
+  //     .style('fill', '#444')
+  //     .style('font-weight', '500')
+  //     .text(mode.diverging ? 'Change in mobility (1978 → 1992)' : 'Adult income rank (percentile)');
+  // }
 
   function drawMap() {
-    const mode = modes.find(m => m.key === activeMode);
-    const field = mode.field;
+    if (!svgEl || !data || !geoData) return;
 
-    const valueMap = new Map(
-      data
-        .filter(d => d[field] != null)
-        .map(d => [d.fips, +d[field]])
+    const field78 = 'kfr_pooled_pooled_p1_1978';
+    const field92 = 'kfr_pooled_pooled_p1_1992';
+
+    const valueMap78 = new Map(
+      data.filter(d => d[field78] != null)
+        .map(d => [d.fips, +d[field78]])
+    );
+    const valueMap92 = new Map(
+      data.filter(d => d[field92] != null)
+        .map(d => [d.fips, +d[field92]])
     );
 
-    const values = [...valueMap.values()];
-    let domainLo, domainMid, domainHi;
+    const allValues = [
+      ...valueMap78.values(),
+      ...valueMap92.values()
+    ];
+    const lo = d3.quantile(allValues.slice().sort(d3.ascending), 0.05);
+    const hi = d3.quantile(allValues.slice().sort(d3.ascending), 0.95);
 
-    if (mode.diverging) {
-      const absMax = d3.quantile(values.map(Math.abs).sort(d3.ascending), 0.95);
-      domainLo = -absMax; domainMid = 0; domainHi = absMax;
-    } else {
-      const sorted = values.slice().sort(d3.ascending);
-      domainLo = d3.quantile(sorted, 0.05);
-      domainMid = d3.quantile(sorted, 0.5);
-      domainHi = d3.quantile(sorted, 0.95);
-    }
-
-    const colorScale = d3.scaleDiverging()
-      .domain([domainLo, domainMid, domainHi])
+    const colorScale = d3.scaleSequential()
+      .domain([lo, hi])
       .interpolator(d3.interpolateRdBu);
 
     const svg = d3.select(svgEl);
     svg.selectAll('*').remove();
 
-    const width = svgEl.clientWidth || 900;
-    const height = width * 0.6;
-    svg.attr('viewBox', `0 0 ${width} ${height}`);
+    const W = svgEl.clientWidth || 900;
+    const H = Math.round(W * 0.62);
+    svg.attr('viewBox', `0 0 ${W} ${H}`);
 
     const counties = topojson.feature(geoData, geoData.objects.counties);
-    const projection = d3.geoAlbersUsa().fitSize([width, height], counties);
-    const path = d3.geoPath().projection(projection);
+    const proj = d3.geoAlbersUsa().fitSize([W, H], counties);
+    const path = d3.geoPath(proj);
+
     const g = svg.append('g');
 
-    g.selectAll('path')
+    g.selectAll('path.county')
       .data(counties.features)
       .join('path')
+      .attr('class', 'county')
       .attr('d', path)
-      .attr('fill', d => {
-        const val = valueMap.get(d.id);
-        return val != null ? colorScale(val) : '#ddd';
-      })
       .attr('stroke', '#fff')
       .attr('stroke-width', 0.3)
-      .on('mouseover', function (event, d) {
-        const val = valueMap.get(d.id);
-        const info = data.find(r => r.fips === d.id);
-        d3.select(this).attr('stroke', '#222').attr('stroke-width', 1.8);
-
-        let valueLabel = 'No data';
-        let rankLabel = '';
-        if (val != null) {
-          if (mode.diverging) {
-            valueLabel = (val > 0 ? '+' : '') + (val * 100).toFixed(1) + ' percentile pts';
-            rankLabel = val > 0 ? 'Improving' : 'Worsening';
-          } else {
-            valueLabel = 'Income rank: ' + (val * 100).toFixed(1) + 'th percentile';
-            rankLabel = val > 0.5 ? 'Above national median' : 'Below national median';
-          }
-        }
-
+      .attr('fill', d => {
+        const v78 = valueMap78.get(d.id) ?? valueMap78.get(String(d.id).padStart(5,'0'));
+        return v78 != null ? colorScale(v78) : '#ddd';
+      })
+      .on('mouseover', function(ev, d) {
+        const fips = String(d.id).padStart(5, '0');
+        const v78 = valueMap78.get(d.id) ?? valueMap78.get(fips);
+        const v92 = valueMap92.get(d.id) ?? valueMap92.get(fips);
+        const info = data.find(r => r.fips === d.id || String(r.fips).padStart(5,'0') === fips);
+        d3.select(this).attr('stroke', '#333').attr('stroke-width', 1.5);
+        const rect = svgEl.getBoundingClientRect();
         tooltip = {
           visible: true,
-          x: event.offsetX + 14,
-          y: event.offsetY - 36,
-          name: info?.county_name ?? 'Unknown county',
+          x: ev.clientX - rect.left + 12,
+          y: ev.clientY - rect.top - 10,
+          name: info?.county_name ?? 'Unknown',
           state: info?.state_name ?? '',
-          value: valueLabel,
-          rank: rankLabel,
+          v78: v78 != null ? (v78 * 100).toFixed(1) : null,
+          v92: v92 != null ? (v92 * 100).toFixed(1) : null,
+          change: (v78 != null && v92 != null)
+            ? ((v92 - v78) * 100).toFixed(1)
+            : null,
         };
       })
-      .on('mousemove', function (event) {
-        tooltip = { ...tooltip, x: event.offsetX + 14, y: event.offsetY - 36 };
+      .on('mousemove', function(ev) {
+        const rect = svgEl.getBoundingClientRect();
+        tooltip = { ...tooltip, x: ev.clientX - rect.left + 12, y: ev.clientY - rect.top - 10 };
       })
-      .on('mouseout', function () {
+      .on('mouseleave', function() {
         d3.select(this).attr('stroke', '#fff').attr('stroke-width', 0.3);
         tooltip = { ...tooltip, visible: false };
       });
 
-    // State borders
-    g.append('path')
+    svg.append('path')
       .datum(topojson.mesh(geoData, geoData.objects.states, (a, b) => a !== b))
       .attr('d', path)
       .attr('fill', 'none')
       .attr('stroke', '#fff')
-      .attr('stroke-width', 1);
+      .attr('stroke-width', 0.9);
 
-    // Legend
-    const legendWidth = 240;
-    const legendHeight = 10;
-    const legendX = width - legendWidth - 20;
-    const legendY = height - 44;
-
+    const lgW = 200, lgH = 10;
+    const lgX = 16, lgY = H - 44;
     const defs = svg.append('defs');
-    const grad = defs.append('linearGradient').attr('id', 'legend-grad');
-
-    const stops = d3.range(0, 1.01, 0.05);
-    grad.selectAll('stop')
-      .data(stops)
-      .join('stop')
-      .attr('offset', d => d)
-      .attr('stop-color', d => colorScale(domainLo + d * (domainHi - domainLo)));
-
-    svg.append('rect')
-      .attr('x', legendX).attr('y', legendY)
-      .attr('width', legendWidth).attr('height', legendHeight)
-      .style('fill', 'url(#legend-grad)')
-      .attr('rx', 3);
-
-    const legendLabels = mode.diverging
-      ? ['Worsening', 'No change', 'Improving']
-      : ['Low mobility', 'Median', 'High mobility'];
-
-    legendLabels.forEach((label, i) => {
-      svg.append('text')
-        .attr('x', legendX + (i * legendWidth / 2))
-        .attr('y', legendY + 24)
-        .attr('text-anchor', i === 0 ? 'start' : i === 1 ? 'middle' : 'end')
-        .style('font-size', '10px')
-        .style('fill', '#555')
-        .text(label);
+    const grad = defs.append('linearGradient').attr('id', 'cm-grad');
+    d3.range(0, 1.01, 0.1).forEach(t => {
+      grad.append('stop').attr('offset', t)
+        .attr('stop-color', colorScale(lo + t * (hi - lo)));
+    });
+    svg.append('rect').attr('x', lgX).attr('y', lgY)
+      .attr('width', lgW).attr('height', lgH).attr('rx', 3)
+      .attr('fill', 'url(#cm-grad)');
+    [['Low mobility', 'start', lgX], ['High mobility', 'end', lgX + lgW]].forEach(([label, anchor, x]) => {
+      svg.append('text').attr('x', x).attr('y', lgY + 24)
+        .attr('text-anchor', anchor).style('font-size', '10px').style('fill', '#555').text(label);
     });
 
-    svg.append('text')
-      .attr('x', legendX)
-      .attr('y', legendY - 7)
-      .style('font-size', '11px')
-      .style('fill', '#444')
-      .style('font-weight', '500')
-      .text(mode.diverging ? 'Change in mobility (1978 → 1992)' : 'Adult income rank (percentile)');
+    const countyOrder = counties.features
+      .map(d => {
+        const fips = String(d.id).padStart(5, '0');
+        const v78 = valueMap78.get(d.id) ?? valueMap78.get(fips);
+        const v92 = valueMap92.get(d.id) ?? valueMap92.get(fips);
+        const absChange = (v78 != null && v92 != null)
+          ? Math.abs(v92 - v78)
+          : 0;
+        return { id: d.id, fips, absChange };
+      })
+      .sort((a, b) => b.absChange - a.absChange); 
+    const triggerMap = new Map();
+    countyOrder.forEach((d, i) => {
+      const triggerT = (i / countyOrder.length) * 0.8;
+      triggerMap.set(d.id, triggerT);
+      triggerMap.set(d.fips, triggerT);
+    });
+
+    return function updateFill(t) {
+      g.selectAll('path.county')
+        .attr('fill', d => {
+          const fips = String(d.id).padStart(5, '0');
+          const v78 = valueMap78.get(d.id) ?? valueMap78.get(fips);
+          const v92 = valueMap92.get(d.id) ?? valueMap92.get(fips);
+          if (v78 == null && v92 == null) return '#ddd';
+
+          const triggerT = triggerMap.get(d.id) ?? triggerMap.get(fips) ?? 0;
+
+          // 每个县有0.15的过渡窗口
+          const localT = Math.max(0, Math.min(1, (t - triggerT) / 0.15));
+          const v = v78 != null && v92 != null
+            ? v78 + (v92 - v78) * localT
+            : (v78 ?? v92);
+          return colorScale(v);
+        });
+    };
   }
 
 
 </script>
 
-<div class="map-container">
-
-  <!-- Toggle buttons -->
-  <div class="toggle-bar">
-    {#each modes as mode}
-      <button
-        class="toggle-btn"
-        class:active={activeMode === mode.key}
-        onclick={() => activeMode = mode.key}
-      >
-        {mode.label}
-      </button>
-    {/each}
-  </div>
-
-  <!-- Title + description (reactive) -->
-  {#each modes as mode}
-    {#if activeMode === mode.key}
-      <h2>{mode.title}</h2>
-      <p class="desc">{mode.desc}</p>
-    {/if}
-  {/each}
-
-  <!-- Insight callout (changes per mode) -->
-  <div class="insight">
-    {#if activeMode === 'p1'}
-      <strong>Key finding:</strong> Geography dramatically shapes the fate of children born poor.
-      Counties in the Mountain West and upper Midwest show much stronger upward mobility than
-      parts of the Deep South or Appalachia — for the exact same starting income level.
-    {:else if activeMode === 'p100'}
-      <strong>Key finding:</strong> Wealthy families are largely insulated from geography.
-      The map is far more uniform — children born rich tend to stay near the top regardless of county.
-      This contrast with the "born poor" map reveals that geography is a trap mainly for the disadvantaged.
-    {:else}
-      <strong>Key finding:</strong> Mobility is declining in many counties, especially in the South and Midwest.
-      Children born in 1992 in these areas face worse odds than those born in 1978 — the American Dream
-      is fading fastest in the places that needed it most.
-    {/if}
-  </div>
-
+<!-- <div class="map-container">
   {#if isLoading}
     <div class="loading">Loading map data...</div>
   {:else}
@@ -432,14 +569,52 @@
       {/if}
     </div>
   {/if}
+</div> -->
+<div class="map-wrap">
+  {#if isLoading}
+    <p class="map-loading">Loading…</p>
+  {:else}
+  <div class="control-bar">
+    <div class="year-display">
+      <span class="year-tag" class:active={progress < 0.5}>1978</span>
+      <span class="year-arrow">→</span>
+      <span class="year-tag" class:active={progress >= 0.5}>1992</span>
+    </div>
+    <div class="status-text">
+      {#if isPlaying && progress < 0.5}
+        Showing 1978 baseline…
+      {:else if isPlaying}
+        Transitioning to 1992…
+      {:else if progress >= 1}
+        1992 — compare the changes
+      {:else}
+        1978 — where mobility stood
+      {/if}
+    </div>
+    <button class="play-btn" onclick={playAnimation} disabled={isPlaying}>
+      {progress > 0 && !isPlaying ? '↺ Replay' : '▶ Play'}
+    </button>
+    {#if progress > 0 && !isPlaying}
+      <button class="reset-btn" onclick={resetAnimation}>Reset</button>
+    {/if}
+  </div>
 
-  <!-- Comparison note (only shown when viewing p1 or p100) -->
-  {#if activeMode !== 'change'}
-    <p class="compare-hint">
-      Switch between "Born poor" and "Born wealthy" to see how geography affects children differently depending on their starting point.
-    </p>
+    <svg bind:this={svgEl} style="width:100%;display:block;"></svg>
+
+    <!-- tooltip -->
+    {#if tooltip.visible}
+      <div class="tooltip" style="left:{tooltip.x}px;top:{tooltip.y}px">
+        <strong>{tooltip.name}, {tooltip.state}</strong><br/>
+        1978 mobility: <strong>{tooltip.v78 ?? 'no data'}th</strong><br/>
+        1992 mobility: <strong>{tooltip.v92 ?? 'no data'}th</strong><br/>
+        {#if tooltip.change != null}
+          Change: <strong style="color:{+tooltip.change > 0 ? '#2471A3' : '#C0392B'}">
+            {+tooltip.change > 0 ? '+' : ''}{tooltip.change} pts
+          </strong>
+        {/if}
+      </div>
+    {/if}
   {/if}
-
 </div>
 
 <style>
@@ -492,7 +667,7 @@
     50% { border-color: #2c5f8a; box-shadow: 0 0 0 4px rgba(44, 95, 138, 0.12); transform: scale(1.03); }
   }
 
-  h2 {
+  /* h2 {
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 0.3rem;
@@ -550,6 +725,65 @@
     color: #888;
     margin-top: 0.5rem;
     text-align: center;
+    font-style: italic;
+  } */
+
+  .map-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  .map-loading {
+    text-align: center;
+    padding: 4rem;
+    color: #888;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(15, 15, 15, 0.9);
+    color: #fff;
+    padding: 8px 13px;
+    border-radius: 7px;
+    font-size: 13px;
+    pointer-events: none;
+    white-space: nowrap;
+    line-height: 1.7;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    z-index: 10;
+  }
+
+  .control-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .year-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .year-tag {
+    font-size: 15px;
+    font-weight: 700;
+    color: #bbb;
+    transition: color 0.4s, transform 0.4s;
+  }
+  .year-tag.active {
+    color: #2c3e50;
+    transform: scale(1.1);
+  }
+  .year-arrow {
+    font-size: 13px;
+    color: #ccc;
+  }
+  .status-text {
+    flex: 1;
+    font-size: 12px;
+    color: #888;
     font-style: italic;
   }
 </style>

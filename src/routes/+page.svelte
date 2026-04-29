@@ -36,13 +36,13 @@
         {
             id: 1,
             title: "The Privilege Shield",
-            content: "Geography punishes the poor far more than it constrains the rich. Across U.S. counties, children from wealthy families end up near the top almost everywhere. For children born poor, the county they're born in makes all the difference. We measure this gap by comparing outcomes for children born at the bottom (P1) and the top (P100) of the income distribution. The larger the difference, the lower the mobility.",
-            transition: "If where you're born locks in your fate, is the lock at least loosening over time?"
+            content: "Here's the striking part: geography barely matters if you're born rich. Kids from wealthy families end up near the top no matter where they grow up. But for kids born poor, their county of birth makes all the difference. The map on the right shows this gap — each dot is a county, and the further it falls from the diagonal, the bigger the gap between rich and poor kids' outcomes.",
+            transition: "So geography traps poor kids. But is this getting better or worse over time?"
         },
         {
             id: 2,
             title: "A Fading Dream",
-            content: "The answer is no. Comparing children born in 1978 with those born in 1992, upward mobility has declined in many counties — especially in the South and Midwest. The American Dream is fading fastest in the places that needed it most.",
+            content: "Worse. We compared two groups: kids born in 1978 and kids born in 1992. In much of the South and Midwest, the younger generation actually has lower odds of climbing up than their parents did. The places that needed more opportunity got less.",
             transition: "Three facts from U.S. county data: birthplace predicts destiny, wealth insulates, and the problem is getting worse. But why? One concrete clue lies in how America funds its schools."
         },
 
@@ -76,9 +76,9 @@
     ];
 
     const vizGuide = {
-        0: "The map will play automatically to show how opportunity varies across counties. Then switch to the ‘State bubble map’ to explore — circle size shows population, and you can click a state to zoom into county details.",
-        1: "Compare county outcomes: X-axis = children born poor, Y-axis = children born rich. Points far from the diagonal show large gaps.",
-        2: "Blue counties = mobility improved (1978→1992). Red counties = mobility worsened. Toggle views to compare.",
+        0: "Watch the map animate through three stages of mobility — then switch to 'State bubble map' and click any state to zoom into its counties. Smaller states like those in the Northeast are easier to explore this way.",
+        1: "Hover over any dot to see the exact mobility gap for that county — how far apart outcomes are for kids born poor vs. born rich in the same place.",
+        2: "Hit ▶ Play to see how mobility shifted between 1978 and 1992. Counties with the biggest changes appear first — watch where the red spreads.",
         3: "Compare who pays for schools: blue = central/federal funding, red = local/state funding.",
         4: "Each bubble is a country. X = inequality (Gini), Y = immobility (IGE). The U.S. is highlighted.",
         5: "Each line spans from market Gini to disposable Gini. Longer lines = stronger redistribution.",
@@ -111,7 +111,6 @@
         schedule.forEach(({ delay, step }) => {
             const t = setTimeout(() => {
                 mapStep = step;
-                scrollToCard(step);
             }, delay);
             autoPlayTimers.push(t);
         });
@@ -127,27 +126,38 @@
         heroVisible = true;
         currentStep = 0;
 
-        /* Use a tick delay so Svelte has rendered the DOM */
         requestAnimationFrame(() => {
+            const heroEl = document.querySelector('.hero');
+            let heroPassed = false;
+
+            const heroObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        heroPassed = true; 
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            if (heroEl) heroObserver.observe(heroEl);
+
             const outerObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const step = parseInt(entry.target.getAttribute('data-step') ?? '0');
-                        /* During auto-play, lock currentStep to 0 so the map stays visible */
                         if (autoPlaying) {
                             if (step === 0) currentStep = 0;
                             return;
                         }
                         currentStep = step;
-                        if (step === 0 && !autoPlayDone) startAutoPlay();
+                        if (step === 0 && !autoPlayDone && heroPassed) {
+                            startAutoPlay();
+                        }
                     }
                 });
             }, { rootMargin: '-20% 0px -45% 0px', threshold: 0.25 });
 
             document.querySelectorAll('.step').forEach(el => outerObserver.observe(el));
         });
-
-        startAutoPlay();
 
         return () => {
             autoPlayTimers.forEach(t => clearTimeout(t));
@@ -214,6 +224,11 @@
             <div class="step" data-step={step.id} class:active={currentStep === step.id}>
                 <h2>{step.title}</h2>
                 <p>{step.content}</p>
+                {#if step.finding}
+                    <div class="finding-block">
+                        <strong>Key finding:</strong> {step.finding}
+                    </div>
+                {/if}
                 {#if step.transition}
                     <div class="transition-note">{step.transition}</div>
                 {/if}
@@ -251,7 +266,7 @@
                 </div>
             {:else if currentStep === 2}
                 <!-- Act I, Step 2: ChangeMap (1978→1992) -->
-                <div in:fade out:fade class="chart-box chart-box--map">
+                <div in:fade out:fade class="chart-box chart-box--changemap">
                     <ChangeMap />
                 </div>
             {:else if currentStep === 3}
@@ -658,6 +673,13 @@
         max-width: 60vh;
         height: auto;
         aspect-ratio: 3 / 4;
+    }
+
+    .chart-box--changemap {
+        width: 100%;
+        height: auto;
+        aspect-ratio: unset;
+        align-self: stretch;
     }
 
     /* ── Mobile / narrow screens ── */
