@@ -225,18 +225,31 @@
     });
 </script>
 
-<!-- ── Full-screen hero ── -->
+<!-- ── Full-screen hero — black bg + 3D map ── -->
 <section class="hero" class:visible={heroVisible}>
-    <div class="hero-inner">
-        <p class="hero-eyebrow">A data story</p>
-        <h1>The Geography<br>of Opportunity</h1>
-        <p class="hero-sub">Birthplace, mobility, and policy</p>
-        <p class="hero-question">Why does a zip code matter so much in the U.S., and does cross-country evidence suggest policy can change that?</p>
-        <div class="hero-scroll-hint">
-            <span>Scroll to explore</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+    <div class="hero-split">
+        <!-- Left: title + description -->
+        <div class="hero-text">
+            <p class="hero-eyebrow">CSCI 5609 · A data story</p>
+            <h1>The Geography<br>of Opportunity</h1>
+            <p class="hero-sub">
+                How birthplace shapes the chance of climbing —<br>
+                and how the U.S. compares globally.
+            </p>
+            <p class="hero-legend">
+                <span class="legend-cold">■ Blue</span> = low mobility &nbsp;·&nbsp;
+                <span class="legend-hot">■ Red / gold</span> = high opportunity
+            </p>
+            <div class="hero-scroll-hint">
+                <span>Scroll to explore</span>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+        <!-- Right: live interactive 3D map -->
+        <div class="hero-3d">
+            <Mobility3D />
         </div>
     </div>
 </section>
@@ -416,60 +429,76 @@
         z-index: 10;
     }
 
-    /* ── Hero ── */
+    /* ── Hero — full-black split layout ── */
     .hero {
         height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #fff;
+        background: #0A0A0A;
         opacity: 0;
         transform: translateY(20px);
         transition: opacity 1s ease, transform 1s ease;
+        overflow: hidden;
     }
     .hero.visible {
         opacity: 1;
         transform: translateY(0);
     }
-    .hero-inner {
-        text-align: center;
-        max-width: 640px;
-        padding: 2rem;
+    .hero-split {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: stretch;
+    }
+    .hero-text {
+        width: 38%;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 4rem 3rem 4rem 5vw;
+    }
+    .hero-3d {
+        flex: 1;
+        min-width: 0;
+        padding: 1.2rem 1.5rem 1.2rem 0;
+        display: flex;
+        flex-direction: column;
     }
     .hero-eyebrow {
-        font-size: 0.8rem;
+        font-size: 0.73rem;
         font-weight: 700;
-        letter-spacing: 0.15em;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #e63946;
-        margin-bottom: 1rem;
+        color: #B5533C;
+        margin-bottom: 1.2rem;
     }
-    .hero-inner h1 {
-        font-size: clamp(2.8rem, 6vw, 5rem);
-        color: #2c3e50;
-        line-height: 1.1;
-        margin-bottom: 1rem;
+    .hero-text h1 {
+        font-size: clamp(2.2rem, 3.5vw, 3.6rem);
+        color: #F4EFE6;
+        line-height: 1.08;
+        margin-bottom: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
     }
     .hero-sub {
-        font-size: 1.1rem;
-        color: #5e6f77;
-        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        color: #8A8278;
+        line-height: 1.7;
+        margin-bottom: 1.6rem;
     }
-    .hero-question {
-        font-size: 1rem;
-        color: #5e6f77;
-        line-height: 1.6;
-        max-width: 48ch;
-        margin: 0 auto 2.5rem;
-        font-weight: 500;
+    .hero-legend {
+        font-size: 0.78rem;
+        color: #5A5250;
+        margin-bottom: 2rem;
+        letter-spacing: 0.02em;
     }
+    .legend-cold { color: #4A8FFF; font-weight: 700; }
+    .legend-hot  { color: #FF6030; font-weight: 700; }
     .hero-scroll-hint {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        color: #94a3b8;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #4A4240;
         animation: bounceDown 1.8s ease-in-out infinite;
     }
 

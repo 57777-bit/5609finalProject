@@ -16,22 +16,26 @@
 
   let deckInstance    = null;
   let resizeObserver  = null;
-  // Module-level mirror so layer callbacks (closures created at init time) see current value.
-  let _focused = null;
+  // Module-level mirrors — avoid window.__ which crashes SSR in Svelte 5 onDestroy.
+  let _focused  = null;
+  let _focusFn  = null;
+  let _resetFn  = null;
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  function fireColor(t) {
-    // Low → near-black | Mid → deep red | High → bright orange-red
-    // On a dark background these columns glow like embers.
-    if (t <= 0) return [8, 2, 2];
-    if (t >= 1) return [255, 100, 20];
+  function opportunityColor(t) {
+    // Both ends are vivid so they stand out clearly against the black (#0A0A0A) bg.
+    // Low  → electric blue  (cold / stuck counties)
+    // High → gold-orange    (hot  / high-opportunity counties)
+    // The eye immediately reads cold ↔ warm = stuck ↔ opportunity.
+    if (t <= 0) return [20,  90, 255];
+    if (t >= 1) return [255, 200,  10];
     const stops = [
-      [0.00, [8,   2,   2 ]],
-      [0.35, [80,  8,   0 ]],
-      [0.60, [190, 25,  0 ]],
-      [0.80, [255, 55,  5 ]],
-      [1.00, [255, 100, 20]],
+      [0.00, [ 20,  90, 255]],   // electric blue
+      [0.28, [ 80,  20, 200]],   // deep violet
+      [0.50, [180,  10,  80]],   // magenta-crimson (clear midpoint)
+      [0.72, [255,  60,   0]],   // vivid orange-red
+      [1.00, [255, 200,  10]],   // gold — top-ranked counties glow
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -110,7 +114,7 @@
 
     function rgbaFor(v, active = true) {
       const t = Math.max(0, Math.min(1, (v - lo) / range));
-      const [r, g, b] = fireColor(t);
+      const [r, g, b] = opportunityColor(t);
       return [r, g, b, active ? 245 : 35];
     }
 
@@ -289,9 +293,9 @@
       });
     }
 
-    // Expose to template buttons
-    window.__3d_focusState = focusState;
-    window.__3d_resetView  = resetView;
+    // Wire up module-level refs so template helpers can call these closures.
+    _focusFn = focusState;
+    _resetFn  = resetView;
 
     isLoading = false;
 
@@ -335,13 +339,13 @@
   onDestroy(() => {
     try { deckInstance?.finalize(); } catch (_) {}
     resizeObserver?.disconnect();
-    delete window.__3d_focusState;
-    delete window.__3d_resetView;
+    _focusFn = null;
+    _resetFn  = null;
   });
 
   // Template helpers (read Svelte state, not module vars)
-  function handleReset()       { window.__3d_resetView?.(); }
-  function handleFocus(name)   { window.__3d_focusState?.(name); }
+  function handleReset()       { _resetFn?.(); }
+  function handleFocus(name)   { _focusFn?.(name); }
 
   function fmtPct(v) { return (v * 100).toFixed(1); }
   function fmtDelta(v) {
