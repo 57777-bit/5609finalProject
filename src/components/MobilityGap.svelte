@@ -20,8 +20,13 @@
   };
 
   const keyLabels = ['United States', 'Brazil', 'China', 'Japan', 'Germany', 'United Kingdom', 'Canada'];
+  // Nordic countries get a green accent so the prose mention of "Nordic benchmarks"
+  // resolves visually to the lower-left cluster of the chart.
+  const nordicLabels = ['Norway', 'Sweden', 'Denmark', 'Finland', 'Iceland'];
   const usColor = '#C0392B';
+  const nordicColor = '#27AE60';
   const usRadius = 10;
+  const nordicRadius = 8;
   const keyRadiusBoost = 1.6;
 
   function colorForRegion(region) {
@@ -184,8 +189,16 @@
       .attr('cx', (d) => x(d.gini_disp))
       .attr('cy', (d) => y(d.ige))
       .attr('r', 0)
-      .attr('fill', (d) => d.country === 'United States' ? usColor : colorForRegion(d.region))
-      .attr('opacity', (d) => d.country === 'United States' ? 0.95 : 0.58)
+      .attr('fill', (d) => {
+        if (d.country === 'United States') return usColor;
+        if (nordicLabels.includes(d.country)) return nordicColor;
+        return colorForRegion(d.region);
+      })
+      .attr('opacity', (d) => {
+        if (d.country === 'United States') return 0.95;
+        if (nordicLabels.includes(d.country)) return 0.92;
+        return 0.58;
+      })
       .attr('stroke', '#fff')
       .attr('stroke-width', (d) => d.country === 'United States' ? 1.2 : 0.8)
       .style('cursor', 'pointer')
@@ -209,7 +222,7 @@
       })
       .on('mouseleave', function(ev, d) {
         d3.select(this).attr('stroke', '#fff').attr('stroke-width', 0.8)
-          .attr('opacity', keyLabels.includes(d.country) ? 0.95 : 0.58);
+          .attr('opacity', (keyLabels.includes(d.country) || nordicLabels.includes(d.country)) ? 0.92 : 0.58);
         tooltip = { ...tooltip, visible: false };
       });
 
@@ -217,41 +230,39 @@
       .attr('r', (d) => {
         const baseR = Math.max(4.4, r(d.abs_red));
         if (d.country === 'United States') return usRadius;
+        if (nordicLabels.includes(d.country)) return nordicRadius;
         if (keyLabels.includes(d.country)) return baseR + keyRadiusBoost;
         return baseR;
       });
 
+    const labelOffsets = {
+      'United States':   { dx:   8, dy: -12 },
+      'Brazil':          { dx:   8, dy:   5 },
+      'China':           { dx:   8, dy: -10 },
+      'Japan':           { dx: -36, dy:  14 },
+      'Germany':         { dx:   8, dy:  -8 },
+      'United Kingdom':  { dx:   8, dy: -10 },
+      'Canada':          { dx:   8, dy:  14 },
+      'Norway':          { dx: -42, dy:   4 },
+      'Sweden':          { dx:   8, dy:  -8 },
+      'Denmark':         { dx:   8, dy:  12 },
+      'Finland':         { dx: -42, dy:  -6 },
+      'Iceland':         { dx: -42, dy:  14 },
+    };
+
     g.selectAll('text.country-label')
-      .data(data.filter((d) => keyLabels.includes(d.country)))
+      .data(data.filter((d) => keyLabels.includes(d.country) || nordicLabels.includes(d.country)))
       .join('text')
       .attr('class', 'country-label')
-      .attr('x', (d) => {
-        const xOffset = {
-          'United States': 8,
-          'Brazil': 8,
-          'China': 8,
-          'Japan': -36,
-          'Germany': 8,
-          'United Kingdom': 8,
-          'Canada': 8
-        };
-        return x(d.gini_disp) + (xOffset[d.country] ?? 8);
-      })
-      .attr('y', (d) => {
-        const yOffset = {
-          'United States': -12,
-          'Brazil': 5,
-          'China': -10,
-          'Japan': 14,
-          'Germany': -8,
-          'United Kingdom': -10,
-          'Canada': 14
-        };
-        return y(d.ige) + (yOffset[d.country] ?? 5);
-      })
+      .attr('x', (d) => x(d.gini_disp) + (labelOffsets[d.country]?.dx ?? 8))
+      .attr('y', (d) => y(d.ige) + (labelOffsets[d.country]?.dy ?? 5))
       .attr('font-size', (d) => d.country === 'United States' ? 12 : 10)
       .attr('font-weight', (d) => d.country === 'United States' ? '700' : '500')
-      .attr('fill', (d) => d.country === 'United States' ? usColor : '#444')
+      .attr('fill', (d) => {
+        if (d.country === 'United States') return usColor;
+        if (nordicLabels.includes(d.country)) return nordicColor;
+        return '#444';
+      })
       .attr('paint-order', 'stroke')
       .attr('stroke', '#fff')
       .attr('stroke-width', 3)
@@ -259,6 +270,23 @@
       .text((d) => d.country)
       .transition().delay(300).duration(400)
       .attr('opacity', 1);
+
+    // "Nordic benchmarks" caption above the lower-left cluster, anchored to
+    // a Nordic country's coords so it tracks projection changes.
+    const nordicAnchor = data.find((d) => nordicLabels.includes(d.country));
+    if (nordicAnchor) {
+      g.append('text')
+        .attr('x', x(nordicAnchor.gini_disp) - 18)
+        .attr('y', y(nordicAnchor.ige) - 28)
+        .attr('text-anchor', 'end')
+        .attr('font-size', 11)
+        .attr('font-weight', 700)
+        .attr('fill', nordicColor)
+        .attr('letter-spacing', '0.08em')
+        .attr('opacity', 0)
+        .text('NORDIC BENCHMARKS')
+        .transition().delay(700).duration(400).attr('opacity', 0.9);
+    }
   }
 
   onMount(async () => {

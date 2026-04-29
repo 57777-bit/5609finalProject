@@ -1810,31 +1810,31 @@
       id: 0,
       title: "The Geographic Lottery",
       content:
-        "For children born into low-income families, where they grow up strongly shapes where they end up. In the U.S., your county of birth can influence how far you can rise.",
+        "Same country. Same generation. But where a U.S. child is born already shapes how far they will rise — watch the map fill in.",
     },
     {
       id: 1,
-      title: "Most stay stuck",
+      title: "Red: most stay stuck",
       content:
-        "In most counties, children born poor grow up to still be relatively poor (25th–40th percentile).",
+        "First the red appears. In about 60% of U.S. counties, children born poor still rank below the 40th percentile as adults — barely moving up at all.",
       statNum: "~60%",
       statLabel: "of counties keep poor children below average",
       statColor: "#C0392B",
     },
     {
       id: 2,
-      title: "Some reach the middle",
+      title: "Amber: barely treading water",
       content:
-        "In some counties, children born poor end up around the middle of the income distribution (40th–50th percentile).",
+        "Now amber fills in. Another small share of counties lifts poor children only as far as the 40th–50th percentile — the working middle, but no further.",
       statNum: "~20%",
       statLabel: "of counties lead to average outcomes",
       statColor: "#D4A017",
     },
     {
       id: 3,
-      title: "Very few move ahead",
+      title: "Blue: the rare way up",
       content:
-        "In a small number of counties, children born poor rise above average (above the 50th percentile).",
+        "Finally a few blue patches appear. Only in these counties do poor children consistently climb past the 50th percentile. The geography of escape is rare — and unevenly distributed.",
       statNum: "~20%",
       statLabel: "of counties enable upward mobility",
       statColor: "#2471A3",
@@ -2019,7 +2019,8 @@
 
     drawLegend(svg, H);
 
-    const noteY = H - 50;
+    // Place the chart note above the 4-row legend instead of overlapping it.
+    const noteY = H - 78;
 
     svg
       .append("text")
@@ -2239,7 +2240,7 @@
     svg
       .append("text")
       .attr("x", 10)
-      .attr("y", H - 55) //text y
+      .attr("y", H - 78) // moved above the 4-row legend
       .attr("font-size", 9)
       .attr("fill", "#888")
       .text("Circle size = # children from low-income families · click a state circle to zoom in");
@@ -2248,31 +2249,45 @@
   }
 
   function drawLegend(svg, H) {
+    // 4 entries map 1:1 to COLORS by hex; thresholds reuse THRESHOLD_LO and THRESHOLD_HI.
     const lg = [
-      { c: "#C0392B", l: "Stuck (< 40th pctile)" },
-      { c: "#D4A017", l: "Treading water (40–50th)" },
-      { c: "#2471A3", l: "Climbing (> 50th pctile)" },
+      { c: COLORS.stuck, l: "Stuck",          d: "poor children stay below the 40th percentile as adults" },
+      { c: COLORS.water, l: "Treading water", d: "poor children land near the 40th–50th percentile" },
+      { c: COLORS.climb, l: "Climbing",       d: "poor children rise above the 50th percentile" },
+      { c: COLORS.none,  l: "No data",        d: "county not in the dataset" },
     ];
 
-    const lG = svg.append("g").attr("transform", `translate(16,${H -48})`);
+    const rowH = 15;
+    const lG = svg
+      .append("g")
+      .attr("transform", `translate(16,${H - rowH * lg.length - 6})`);
 
     lg.forEach((item, i) => {
       lG
         .append("rect")
         .attr("x", 0)
-        .attr("y", i * 17)
+        .attr("y", i * rowH)
         .attr("width", 11)
         .attr("height", 11)
         .attr("rx", 2)
-        .attr("fill", item.c);
+        .attr("fill", item.c)
+        .attr("stroke", item.c === COLORS.none ? "#bbb" : "none")
+        .attr("stroke-width", 0.5);
 
-      lG
+      const t = lG
         .append("text")
         .attr("x", 16)
-        .attr("y", i * 17 + 9.5)
-        .attr("font-size", 10)
-        .attr("fill", "#555")
+        .attr("y", i * rowH + 9)
+        .attr("font-size", 10);
+
+      t.append("tspan")
+        .attr("font-weight", 600)
+        .attr("fill", "#333")
         .text(item.l);
+
+      t.append("tspan")
+        .attr("fill", "#777")
+        .text(` — ${item.d}`);
     });
   }
 

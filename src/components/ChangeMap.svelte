@@ -445,7 +445,12 @@
     svg.attr('viewBox', `0 0 ${W} ${H}`);
 
     const counties = topojson.feature(geoData, geoData.objects.counties);
-    const proj = d3.geoAlbersUsa().fitSize([W, H], counties);
+    // Reserve a top strip so the legend at the top does not cover any county.
+    const TOP_PAD = 56;
+    const proj = d3.geoAlbersUsa().fitExtent(
+      [[0, TOP_PAD], [W, H]],
+      counties
+    );
     const path = d3.geoPath(proj);
 
     const g = svg.append('g');
@@ -497,8 +502,37 @@
       .attr('stroke', '#fff')
       .attr('stroke-width', 0.9);
 
+    // Region labels anchor the prose mentions of "South" and "Midwest" to the map.
+    // Each label is centered on a representative state so the narrative has a visual target.
+    const states = topojson.feature(geoData, geoData.objects.states);
+    const REGION_ANCHORS = [
+      { label: 'SOUTH',   stateId: '47' }, // Tennessee — central to the Census South
+      { label: 'MIDWEST', stateId: '19' }, // Iowa — central to the Census Midwest
+    ];
+    REGION_ANCHORS.forEach(({ label, stateId }) => {
+      const f = states.features.find(s => String(s.id) === stateId);
+      if (!f) return;
+      const [cx, cy] = path.centroid(f);
+      if (!Number.isFinite(cx)) return;
+      svg.append('text')
+        .attr('x', cx).attr('y', cy)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 18)
+        .attr('font-weight', 700)
+        .attr('fill', '#5a3033')
+        .attr('opacity', 0.55)
+        .attr('paint-order', 'stroke')
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 3)
+        .style('letter-spacing', '0.18em')
+        .style('pointer-events', 'none')
+        .text(label);
+    });
+
+    // Legend pinned to the top-right strip reserved by TOP_PAD; no county is covered.
     const lgW = 200, lgH = 10;
-    const lgX = 16, lgY = H - 44;
+    const lgX = W - lgW - 20;
+    const lgY = 16;
     const defs = svg.append('defs');
     const grad = defs.append('linearGradient').attr('id', 'cm-grad');
     d3.range(0, 1.01, 0.1).forEach(t => {
