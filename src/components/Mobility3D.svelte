@@ -24,17 +24,17 @@
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function opportunityColor(t) {
-    // Low mobility fades into the dark background (recedes visually).
-    // High mobility glows like fire — opportunity literally illuminates.
-    // Transition: dark indigo → deep crimson → vivid orange → bright gold.
-    if (t <= 0) return [35, 15, 80];
-    if (t >= 1) return [255, 235, 40];
+    // Low opportunity: deep dark red (recedes on black background).
+    // High opportunity: white-hot — columns literally glow bright.
+    // Gradient: dark crimson → vivid red → orange → warm white.
+    if (t <= 0) return [90, 5, 15];
+    if (t >= 1) return [255, 248, 235];
     const stops = [
-      [0.00, [ 35,  15,  80]],  // dark indigo — nearly invisible on black bg
-      [0.25, [130,  10,  70]],  // deep wine-crimson
-      [0.50, [215,  35,   0]],  // vivid red-orange — midpoint burns
-      [0.75, [255, 130,   0]],  // bright orange
-      [1.00, [255, 235,  40]],  // gold-yellow — top counties glow
+      [0.00, [ 90,   5,  15]],  // dark maroon  — lowest opportunity, nearly black
+      [0.30, [210,  15,  15]],  // vivid red    — clearly low
+      [0.55, [255,  85,   0]],  // red-orange   — below median
+      [0.75, [255, 175,  60]],  // warm orange  — above median
+      [1.00, [255, 248, 235]],  // near-white   — top counties blaze bright
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -223,7 +223,7 @@
         zoom: -0.4,
         rotationX: 44,
         rotationOrbit: -8,
-        minZoom: -3,
+        minZoom: -1.2,
         maxZoom: 3,
       },
       controller: { dragRotate: true, scrollZoom: true, doubleClickZoom: false },
@@ -363,7 +363,7 @@
       <h3>3D Mobility Map</h3>
       <p class="subtitle">
         Each column = one U.S. county. <strong>Height & color = upward mobility</strong>
-        for children of poor parents (1992 cohort). Tallest, reddest = most opportunity.
+        for children of poor parents (1992 cohort). Tallest &amp; brightest (white) = most opportunity; deep red = least.
         {#if geoState && !focusedState}
           <span class="geo-hint">Detected your state: <em>{geoState}</em> — zooming in…</span>
         {/if}
