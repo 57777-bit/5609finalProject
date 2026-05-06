@@ -519,7 +519,7 @@
         .attr('text-anchor', 'middle')
         .attr('font-size', 18)
         .attr('font-weight', 700)
-        .attr('fill', '#5a3033')
+        .attr('fill', '#C88080')
         .attr('opacity', 0.55)
         .attr('paint-order', 'stroke')
         .attr('stroke', '#fff')
@@ -544,7 +544,7 @@
       .attr('fill', 'url(#cm-grad)');
     [['Low mobility', 'start', lgX], ['High mobility', 'end', lgX + lgW]].forEach(([label, anchor, x]) => {
       svg.append('text').attr('x', x).attr('y', lgY + 24)
-        .attr('text-anchor', anchor).style('font-size', '10px').style('fill', '#555').text(label);
+        .attr('text-anchor', anchor).style('font-size', '10px').style('fill', '#9A9088').text(label);
     });
 
     const countyOrder = counties.features
@@ -792,8 +792,8 @@
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
+    background: #141414;
+    border-bottom: 1px solid #2A2018;
   }
   .year-display {
     display: flex;
@@ -803,21 +803,45 @@
   .year-tag {
     font-size: 15px;
     font-weight: 700;
-    color: #bbb;
+    color: #5A5250;
     transition: color 0.4s, transform 0.4s;
   }
   .year-tag.active {
-    color: #2c3e50;
+    color: #E8E0D5;
     transform: scale(1.1);
   }
   .year-arrow {
     font-size: 13px;
-    color: #ccc;
+    color: #3A3028;
   }
   .status-text {
     flex: 1;
     font-size: 12px;
-    color: #888;
+    color: #6B6259;
     font-style: italic;
   }
+  .play-btn {
+    padding: 5px 14px;
+    background: #B5533C;
+    border: none;
+    border-radius: 4px;
+    color: #F4EFE6;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .play-btn:hover:not(:disabled) { background: #D67A5C; }
+  .play-btn:disabled { opacity: 0.45; cursor: default; }
+  .reset-btn {
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid #3A3028;
+    border-radius: 4px;
+    color: #8A8278;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .reset-btn:hover { border-color: #6B6259; color: #C8C0B5; }
 </style>

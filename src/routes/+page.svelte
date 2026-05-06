@@ -11,7 +11,7 @@
     import Mobility3D from '../components/Mobility3D.svelte';
 
     let currentStep = $state(0);
-    let mapStep = $state(0);
+    let mapStep = $state(3);  // pre-show full coloured map; Play resets to 0
     const useMilestoneExtras = true;
 
     /* ── Auto-play state for Step 0 ── */
@@ -225,21 +225,37 @@
     });
 </script>
 
-<!-- ── Full-screen hero ── -->
+<!-- ── Full-screen hero — 3D map top, title below ── -->
 <section class="hero" class:visible={heroVisible}>
-    <div class="hero-inner">
-        <p class="hero-eyebrow">A data story</p>
-        <h1>The Geography<br>of Opportunity</h1>
-        <p class="hero-sub">Birthplace, mobility, and policy</p>
-        <p class="hero-question">Why does a zip code matter so much in the U.S., and does cross-country evidence suggest policy can change that?</p>
-        <div class="hero-scroll-hint">
-            <span>Scroll to explore</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+    <div class="hero-stack">
+        <!-- Top: full-width 3D map -->
+        <div class="hero-3d">
+            <Mobility3D />
+        </div>
+        <!-- Bottom: title band -->
+        <div class="hero-text">
+            <p class="hero-eyebrow">CSCI 5609 · A data story</p>
+            <h1>The Geography of Opportunity</h1>
+            <p class="hero-sub">
+                How birthplace shapes the chance of climbing — and how the U.S. compares globally.
+            </p>
+            <div class="hero-meta">
+                <span class="hero-legend">
+                    <span class="legend-cold">■</span> low mobility &nbsp;·&nbsp;
+                    <span class="legend-hot">■</span> high opportunity
+                </span>
+                <div class="hero-scroll-hint">
+                    <span>Scroll to explore</span>
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+<!-- ── Gradient bridge: black hero → warm cream content ── -->
+<div class="hero-bridge"></div>
 
 <div class="layout">
     <div class="story">
@@ -405,7 +421,12 @@
 </div>
 
 <style>
+    :global(body) {
+        background: #0D0D0D;
+        margin: 0;
+    }
     .layout {
+        background: #0D0D0D;
         display: flex;
         width: 100%;
     }
@@ -416,13 +437,9 @@
         z-index: 10;
     }
 
-    /* ── Hero ── */
+    /* ── Hero — full-black stacked layout ── */
     .hero {
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #fff;
+        background: #0A0A0A;
         opacity: 0;
         transform: translateY(20px);
         transition: opacity 1s ease, transform 1s ease;
@@ -431,51 +448,80 @@
         opacity: 1;
         transform: translateY(0);
     }
-    .hero-inner {
+    .hero-stack {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    /* 3D map — fixed height so canvas doesn't leave empty space below */
+    .hero-3d {
+        height: 52vh;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Title band — compact, centered, pinned directly below map */
+    .hero-text {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        max-width: 640px;
-        padding: 2rem;
+        padding: 0.7rem 2rem 1.2rem;
+        background: #0A0A0A;
+        border-top: 1px solid #1E1A14;
     }
     .hero-eyebrow {
-        font-size: 0.8rem;
+        font-size: 0.68rem;
         font-weight: 700;
-        letter-spacing: 0.15em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
-        color: #e63946;
-        margin-bottom: 1rem;
+        color: #B5533C;
+        margin-bottom: 0.35rem;
     }
-    .hero-inner h1 {
-        font-size: clamp(2.8rem, 6vw, 5rem);
-        color: #2c3e50;
-        line-height: 1.1;
-        margin-bottom: 1rem;
+    .hero-text h1 {
+        font-size: clamp(2.4rem, 4.5vw, 4rem);
+        color: #F4EFE6;
+        line-height: 1.08;
+        margin-bottom: 0.3rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
     }
     .hero-sub {
-        font-size: 1.1rem;
-        color: #5e6f77;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        color: #7A7268;
+        line-height: 1.55;
+        margin-bottom: 0.6rem;
+        max-width: 56ch;
     }
-    .hero-question {
-        font-size: 1rem;
-        color: #5e6f77;
-        line-height: 1.6;
-        max-width: 48ch;
-        margin: 0 auto 2.5rem;
-        font-weight: 500;
+    .hero-meta {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
+    .hero-legend {
+        font-size: 0.72rem;
+        color: #6B6259;
+        letter-spacing: 0.03em;
+    }
+    .legend-cold { color: #5B8FFF; font-weight: 700; }
+    .legend-hot  { color: #FF7030; font-weight: 700; }
     .hero-scroll-hint {
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 0.4rem;
-        font-size: 0.85rem;
-        color: #94a3b8;
+        font-size: 0.72rem;
+        color: #5A5250;
         animation: bounceDown 1.8s ease-in-out infinite;
     }
+    /* Bridge is now same colour as everything — zero height */
+    .hero-bridge { display: none; }
 
     .subtitle {
         font-size: 1.1rem;
-        color: #5e6f77;
+        color: #6B6259;
         margin-top: 0.3rem;
     }
 
@@ -483,7 +529,7 @@
         margin-top: 1rem;
         max-width: 36ch;
         font-size: 0.95rem;
-        color: #5e6f77;
+        color: #6B6259;
         line-height: 1.45;
         font-weight: 500;
     }
@@ -504,14 +550,14 @@
 
     .footer h2 {
         font-size: 2rem;
-        color: #2c3e50;
+        color: #E8E0D5;
         margin-bottom: 0.5rem;
     }
 
     .footer p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #34495e;
+        color: #8A8278;
         max-width: 40ch;
     }
 
@@ -586,25 +632,29 @@
 
     .narration-card h2 {
         font-size: 1.6rem;
-        color: #2c3e50;
+        color: #E8E0D5;
         margin-bottom: 0.4rem;
     }
 
     .narration-card p {
         font-size: 1.1rem;
         line-height: 1.5;
-        color: #34495e;
+        color: #8A8278;
     }
 
     .step h2 {
         font-size: 2rem;
-        color: #2c3e50;
+        color: #E8E0D5;
+    }
+
+    .step.active h2 {
+        color: #D67A5C;  /* lighter terracotta — readable on dark bg */
     }
 
     .step p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #34495e;
+        color: #8A8278;
     }
 
     /* ── Scroll guide after auto-play ── */
@@ -616,14 +666,14 @@
 
     .scroll-guide p {
         font-size: 1.1rem;
-        color: #555;
+        color: #6B6259;
         margin: 0.3rem 0;
     }
 
     .scroll-guide-line {
         width: 1px;
         height: 40px;
-        background: #ccc;
+        background: #2A2018;
         margin: 0 auto 1rem;
     }
 
@@ -635,7 +685,7 @@
 
     .scroll-guide-main {
         font-size: 1.15rem \!important;
-        color: #2c3e50 \!important;
+        color: #1F1B16 \!important;
         font-weight: 500;
     }
 
@@ -692,8 +742,8 @@
 
     .measure-pill {
         padding: 0.55rem 0.9rem;
-        background: rgba(36, 113, 163, 0.06);
-        border-left: 3px solid #2471A3;
+        background: rgba(181, 83, 60, 0.06);
+        border-left: 3px solid #B5533C;
         border-radius: 0 6px 6px 0;
     }
 
@@ -701,7 +751,7 @@
         display: block;
         font-size: 0.75rem;
         font-weight: 700;
-        color: #2471A3;
+        color: #D67A5C;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         margin-bottom: 0.2rem;
@@ -710,7 +760,7 @@
     .measure-def {
         display: block;
         font-size: 0.85rem;
-        color: #555;
+        color: #6B6259;
         line-height: 1.45;
     }
 
@@ -766,7 +816,7 @@
     }
     .play-hint {
         font-size: 0.85rem !important;
-        color: #7b8a8b !important;
+        color: #6B6259 !important;
         margin: 0 !important;
         max-width: 36ch;
     }
@@ -781,7 +831,7 @@
         align-items: center;
         gap: 0.55rem;
         font-size: 0.9rem;
-        color: #5e6f77;
+        color: #6B6259;
         font-weight: 500;
     }
     .play-status-dot {
@@ -834,7 +884,7 @@
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #94a3b8;
+        color: #6B6259;
     }
 
     /* ── Stat blocks ── */
@@ -857,7 +907,7 @@
 
     .stat-label {
         font-size: 0.85rem;
-        color: #555;
+        color: #6B6259;
         line-height: 1.4;
     }
 
@@ -873,8 +923,8 @@
         height: 100vh;
         display: grid;
         place-items: center;
-        background: #fff;
-        border-left: 1px solid #e0e0e0;
+        background: #0D0D0D;
+        border-left: 1px solid #1E1814;
         padding: 1rem;
         overflow: hidden;
     }
@@ -886,9 +936,9 @@
         right: 1rem;
         font-size: 0.8rem;
         line-height: 1.35;
-        color: #4b5a64;
-        background: rgba(248, 250, 251, 0.9);
-        border: 1px solid #e4eaee;
+        color: #6B6259;
+        background: rgba(13, 13, 13, 0.92);
+        border: 1px solid #2A2018;
         border-radius: 8px;
         padding: 0.55rem 0.7rem;
         z-index: 5;
@@ -951,7 +1001,7 @@
 
     h1 {
         font-size: 2.5rem;
-        color: #2c3e50;
+        color: #1F1B16;
         margin-bottom: 0.3rem;
     }
 </style>

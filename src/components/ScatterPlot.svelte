@@ -147,14 +147,14 @@
     g.append('text')
       .attr('x', innerW / 2).attr('y', innerH + 48)
       .attr('text-anchor', 'middle')
-      .style('font-size', '12px').style('fill', '#555')
+      .style('font-size', '12px').style('fill', '#9A9088')
       .text('Children’s income percentile (parents at P1)');
 
     g.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('x', -innerH / 2).attr('y', -52)
       .attr('text-anchor', 'middle')
-      .style('font-size', '12px').style('fill', '#555')
+      .style('font-size', '12px').style('fill', '#9A9088')
       .text('Children’s income percentile (parents at P100)');
   }
 </script>
@@ -356,7 +356,7 @@
       .attr('y', innerH + 50)
       .attr('text-anchor', 'middle')
       .style('font-size', '12px')
-      .style('fill', '#555')
+      .style('fill', '#9A9088')
       .text("Children's income percentile (parents at P1)");
 
     g.append('text')
@@ -365,7 +365,7 @@
       .attr('y', -55)
       .attr('text-anchor', 'middle')
       .style('font-size', '12px')
-      .style('fill', '#555')
+      .style('fill', '#9A9088')
       .text("Children's income percentile (parents at P100)");
 
     // points
@@ -494,7 +494,7 @@
       .attr('x', 0)
       .attr('y', 24)
       .style('font-size', '11px')
-      .style('fill', '#666')
+      .style('fill', '#8A8278')
       .text('Small gap');
 
     legend.append('text')
@@ -502,7 +502,7 @@
       .attr('y', 24)
       .attr('text-anchor', 'middle')
       .style('font-size', '11px')
-      .style('fill', '#666')
+      .style('fill', '#8A8278')
       .text('Income gap');
 
     legend.append('text')
@@ -510,7 +510,7 @@
       .attr('y', 24)
       .attr('text-anchor', 'end')
       .style('font-size', '11px')
-      .style('fill', '#666')
+      .style('fill', '#8A8278')
       .text('Large gap');
 
     // Outlier labels: 3 counties with the largest mobility gap so the prose
@@ -591,7 +591,7 @@
 
   .desc {
     font-size: 0.85rem;
-    color: #666;
+    color: #8A8278;
     margin-bottom: 0.5rem;
     line-height: 1.5;
   }
