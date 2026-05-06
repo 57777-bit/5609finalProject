@@ -11,7 +11,7 @@
     import Mobility3D from '../components/Mobility3D.svelte';
 
     let currentStep = $state(0);
-    let mapStep = $state(0);
+    let mapStep = $state(3);  // pre-show full coloured map; Play resets to 0
     const useMilestoneExtras = true;
 
     /* ── Auto-play state for Step 0 ── */
@@ -225,34 +225,37 @@
     });
 </script>
 
-<!-- ── Full-screen hero — black bg + 3D map ── -->
+<!-- ── Full-screen hero — 3D map top, title below ── -->
 <section class="hero" class:visible={heroVisible}>
-    <div class="hero-split">
-        <!-- Left: title + description -->
-        <div class="hero-text">
-            <p class="hero-eyebrow">CSCI 5609 · A data story</p>
-            <h1>The Geography<br>of Opportunity</h1>
-            <p class="hero-sub">
-                How birthplace shapes the chance of climbing —<br>
-                and how the U.S. compares globally.
-            </p>
-            <p class="hero-legend">
-                <span class="legend-cold">■ Blue</span> = low mobility &nbsp;·&nbsp;
-                <span class="legend-hot">■ Red / gold</span> = high opportunity
-            </p>
-            <div class="hero-scroll-hint">
-                <span>Scroll to explore</span>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-        </div>
-        <!-- Right: live interactive 3D map -->
+    <div class="hero-stack">
+        <!-- Top: full-width 3D map -->
         <div class="hero-3d">
             <Mobility3D />
         </div>
+        <!-- Bottom: title band -->
+        <div class="hero-text">
+            <p class="hero-eyebrow">CSCI 5609 · A data story</p>
+            <h1>The Geography of Opportunity</h1>
+            <p class="hero-sub">
+                How birthplace shapes the chance of climbing — and how the U.S. compares globally.
+            </p>
+            <div class="hero-meta">
+                <span class="hero-legend">
+                    <span class="legend-cold">■</span> low mobility &nbsp;·&nbsp;
+                    <span class="legend-hot">■</span> high opportunity
+                </span>
+                <div class="hero-scroll-hint">
+                    <span>Scroll to explore</span>
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 4v12M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+<!-- ── Gradient bridge: black hero → warm cream content ── -->
+<div class="hero-bridge"></div>
 
 <div class="layout">
     <div class="story">
@@ -418,7 +421,12 @@
 </div>
 
 <style>
+    :global(body) {
+        background: #F4EFE6;
+        margin: 0;
+    }
     .layout {
+        background: #F4EFE6;
         display: flex;
         width: 100%;
     }
@@ -429,7 +437,7 @@
         z-index: 10;
     }
 
-    /* ── Hero — full-black split layout ── */
+    /* ── Hero — full-black stacked layout ── */
     .hero {
         height: 100vh;
         background: #0A0A0A;
@@ -442,65 +450,79 @@
         opacity: 1;
         transform: translateY(0);
     }
-    .hero-split {
+    .hero-stack {
         display: flex;
+        flex-direction: column;
         width: 100%;
         height: 100%;
-        align-items: stretch;
     }
-    .hero-text {
-        width: 38%;
-        min-width: 300px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 4rem 3rem 4rem 5vw;
-    }
+    /* 3D map takes ~72% of viewport height */
     .hero-3d {
         flex: 1;
-        min-width: 0;
-        padding: 0;
+        min-height: 0;
         display: flex;
         flex-direction: column;
-        align-items: stretch;
+    }
+    /* Title band — compact, centered, pinned to bottom */
+    .hero-text {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 1.1rem 2rem 1.4rem;
+        background: #0A0A0A;
+        border-top: 1px solid #1E1A14;
     }
     .hero-eyebrow {
-        font-size: 0.73rem;
+        font-size: 0.68rem;
         font-weight: 700;
-        letter-spacing: 0.18em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
         color: #B5533C;
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.45rem;
     }
     .hero-text h1 {
-        font-size: clamp(2.2rem, 3.5vw, 3.6rem);
+        font-size: clamp(1.7rem, 3vw, 2.8rem);
         color: #F4EFE6;
-        line-height: 1.08;
-        margin-bottom: 1.2rem;
+        line-height: 1.1;
+        margin-bottom: 0.35rem;
         font-weight: 800;
         letter-spacing: -0.01em;
     }
     .hero-sub {
-        font-size: 0.95rem;
-        color: #8A8278;
-        line-height: 1.7;
-        margin-bottom: 1.6rem;
+        font-size: 0.85rem;
+        color: #7A7268;
+        line-height: 1.55;
+        margin-bottom: 0.7rem;
+        max-width: 56ch;
+    }
+    .hero-meta {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     .hero-legend {
-        font-size: 0.78rem;
-        color: #5A5250;
-        margin-bottom: 2rem;
-        letter-spacing: 0.02em;
+        font-size: 0.72rem;
+        color: #4A4240;
+        letter-spacing: 0.03em;
     }
-    .legend-cold { color: #4A8FFF; font-weight: 700; }
-    .legend-hot  { color: #FF6030; font-weight: 700; }
+    .legend-cold { color: #5B8FFF; font-weight: 700; }
+    .legend-hot  { color: #FF7030; font-weight: 700; }
     .hero-scroll-hint {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-        color: #4A4240;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        color: #3A3230;
         animation: bounceDown 1.8s ease-in-out infinite;
+    }
+    /* ── Gradient bridge: hero black → content cream ── */
+    .hero-bridge {
+        height: 80px;
+        background: linear-gradient(to bottom, #0A0A0A, #F4EFE6);
     }
 
     .subtitle {
@@ -534,14 +556,14 @@
 
     .footer h2 {
         font-size: 2rem;
-        color: #2c3e50;
+        color: #1F1B16;
         margin-bottom: 0.5rem;
     }
 
     .footer p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #34495e;
+        color: #3D3128;
         max-width: 40ch;
     }
 
@@ -616,25 +638,29 @@
 
     .narration-card h2 {
         font-size: 1.6rem;
-        color: #2c3e50;
+        color: #1F1B16;
         margin-bottom: 0.4rem;
     }
 
     .narration-card p {
         font-size: 1.1rem;
         line-height: 1.5;
-        color: #34495e;
+        color: #3D3128;
     }
 
     .step h2 {
         font-size: 2rem;
-        color: #2c3e50;
+        color: #1F1B16;
+    }
+
+    .step.active h2 {
+        color: #B5533C;  /* terracotta accent on active step */
     }
 
     .step p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #34495e;
+        color: #3D3128;
     }
 
     /* ── Scroll guide after auto-play ── */
@@ -646,14 +672,14 @@
 
     .scroll-guide p {
         font-size: 1.1rem;
-        color: #555;
+        color: #6B6259;
         margin: 0.3rem 0;
     }
 
     .scroll-guide-line {
         width: 1px;
         height: 40px;
-        background: #ccc;
+        background: #D9D0C2;
         margin: 0 auto 1rem;
     }
 
@@ -665,7 +691,7 @@
 
     .scroll-guide-main {
         font-size: 1.15rem \!important;
-        color: #2c3e50 \!important;
+        color: #1F1B16 \!important;
         font-weight: 500;
     }
 
@@ -740,7 +766,7 @@
     .measure-def {
         display: block;
         font-size: 0.85rem;
-        color: #555;
+        color: #6B6259;
         line-height: 1.45;
     }
 
@@ -887,7 +913,7 @@
 
     .stat-label {
         font-size: 0.85rem;
-        color: #555;
+        color: #6B6259;
         line-height: 1.4;
     }
 
@@ -903,8 +929,8 @@
         height: 100vh;
         display: grid;
         place-items: center;
-        background: #fff;
-        border-left: 1px solid #e0e0e0;
+        background: #F4EFE6;
+        border-left: 1px solid #D9D0C2;
         padding: 1rem;
         overflow: hidden;
     }
@@ -916,9 +942,9 @@
         right: 1rem;
         font-size: 0.8rem;
         line-height: 1.35;
-        color: #4b5a64;
-        background: rgba(248, 250, 251, 0.9);
-        border: 1px solid #e4eaee;
+        color: #6B6259;
+        background: rgba(244, 239, 230, 0.92);
+        border: 1px solid #D9D0C2;
         border-radius: 8px;
         padding: 0.55rem 0.7rem;
         z-index: 5;
@@ -981,7 +1007,7 @@
 
     h1 {
         font-size: 2.5rem;
-        color: #2c3e50;
+        color: #1F1B16;
         margin-bottom: 0.3rem;
     }
 </style>
