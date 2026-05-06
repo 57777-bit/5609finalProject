@@ -439,12 +439,10 @@
 
     /* ── Hero — full-black stacked layout ── */
     .hero {
-        height: 100vh;
         background: #0A0A0A;
         opacity: 0;
         transform: translateY(20px);
         transition: opacity 1s ease, transform 1s ease;
-        overflow: hidden;
     }
     .hero.visible {
         opacity: 1;
@@ -454,12 +452,12 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        height: 100%;
+        min-height: 100vh;
     }
-    /* 3D map takes ~72% of viewport height */
+    /* 3D map — fixed height so canvas doesn't leave empty space below */
     .hero-3d {
-        flex: 1;
-        min-height: 0;
+        height: 56vh;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
     }
