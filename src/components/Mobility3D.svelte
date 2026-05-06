@@ -24,17 +24,18 @@
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function opportunityColor(t) {
-    // Low opportunity: near-white (short, pale columns recede softly).
-    // High opportunity: deep vivid red — tallest columns burn brightest.
-    // Gradient: warm white → peach → orange → red → deep crimson.
-    if (t <= 0) return [250, 240, 232];
-    if (t >= 1) return [130, 5, 10];
+    // Plasma-inspired palette designed for dark backgrounds:
+    // low-opportunity columns recede into the dark; high-opportunity columns
+    // climb through purple → magenta → amber → bright gold and literally glow.
+    // Perceptually uniform: every step feels equally "more opportunity".
+    if (t <= 0) return [13, 8, 135];
+    if (t >= 1) return [240, 235, 65];
     const stops = [
-      [0.00, [250, 240, 232]],  // near-white   — lowest opportunity, soft & pale
-      [0.28, [255, 195, 125]],  // peach-orange — low-medium
-      [0.52, [255, 105,  15]],  // vivid orange — midpoint
-      [0.75, [215,  18,  18]],  // vivid red    — above median
-      [1.00, [130,   5,  10]],  // deep crimson — top counties, richest red
+      [0.00, [ 13,   8, 135]],  // deep indigo  — blends into black bg, ominous
+      [0.25, [130,  15, 185]],  // vivid purple — clearly low but visible
+      [0.50, [220,  50, 120]],  // hot magenta  — midpoint drama
+      [0.75, [255, 145,  10]],  // amber-orange — above median, warming up
+      [1.00, [240, 235,  65]],  // bright gold  — top counties blaze like sunlight
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -171,11 +172,11 @@
       }
     }
 
-    // ── Lighting (tuned for dark background) ─────────────────────────────────
+    // ── Lighting (neutral-cool to preserve plasma hues) ───────────────────────
     const lighting = new LightingEffect({
-      ambient: new AmbientLight({ color: [255, 200, 180], intensity: 0.5 }),
-      dir1: new DirectionalLight({ color: [255, 160, 100], intensity: 2.0, direction: [-1, -2, -1] }),
-      dir2: new DirectionalLight({ color: [120,  80,  60], intensity: 0.8, direction: [ 3,  1, -1] }),
+      ambient:  new AmbientLight({ color: [210, 215, 255], intensity: 0.40 }),
+      dir1: new DirectionalLight({ color: [255, 255, 245], intensity: 1.80, direction: [-1, -2, -1] }),
+      dir2: new DirectionalLight({ color: [180, 180, 255], intensity: 0.45, direction: [ 3,  1, -1] }),
     });
 
     // ── Layer factory ─────────────────────────────────────────────────────────
@@ -363,7 +364,7 @@
       <h3>3D Mobility Map</h3>
       <p class="subtitle">
         Each column = one U.S. county. <strong>Height & color = upward mobility</strong>
-        for children of poor parents (1992 cohort). Tallest &amp; deepest red = most opportunity; short white = least.
+        for children of poor parents (1992 cohort). Indigo = least opportunity → purple → magenta → gold = most.
         {#if geoState && !focusedState}
           <span class="geo-hint">Detected your state: <em>{geoState}</em> — zooming in…</span>
         {/if}
