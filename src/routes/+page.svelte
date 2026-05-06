@@ -455,19 +455,19 @@
     }
     /* 3D map — fixed height so canvas doesn't leave empty space below */
     .hero-3d {
-        height: 56vh;
+        height: 52vh;
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
     }
-    /* Title band — compact, centered, pinned to bottom */
+    /* Title band — compact, centered, pinned directly below map */
     .hero-text {
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 1.1rem 2rem 1.4rem;
+        padding: 0.7rem 2rem 1.2rem;
         background: #0A0A0A;
         border-top: 1px solid #1E1A14;
     }
@@ -477,21 +477,21 @@
         letter-spacing: 0.2em;
         text-transform: uppercase;
         color: #B5533C;
-        margin-bottom: 0.45rem;
+        margin-bottom: 0.35rem;
     }
     .hero-text h1 {
-        font-size: clamp(1.7rem, 3vw, 2.8rem);
+        font-size: clamp(2.4rem, 4.5vw, 4rem);
         color: #F4EFE6;
-        line-height: 1.1;
-        margin-bottom: 0.35rem;
+        line-height: 1.08;
+        margin-bottom: 0.3rem;
         font-weight: 800;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.02em;
     }
     .hero-sub {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: #7A7268;
         line-height: 1.55;
-        margin-bottom: 0.7rem;
+        margin-bottom: 0.6rem;
         max-width: 56ch;
     }
     .hero-meta {
