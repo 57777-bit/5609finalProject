@@ -24,17 +24,17 @@
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function opportunityColor(t) {
-    // Low opportunity: deep dark red (recedes on black background).
-    // High opportunity: white-hot — columns literally glow bright.
-    // Gradient: dark crimson → vivid red → orange → warm white.
-    if (t <= 0) return [90, 5, 15];
-    if (t >= 1) return [255, 248, 235];
+    // Low opportunity: near-white (short, pale columns recede softly).
+    // High opportunity: deep vivid red — tallest columns burn brightest.
+    // Gradient: warm white → peach → orange → red → deep crimson.
+    if (t <= 0) return [250, 240, 232];
+    if (t >= 1) return [130, 5, 10];
     const stops = [
-      [0.00, [ 90,   5,  15]],  // dark maroon  — lowest opportunity, nearly black
-      [0.30, [210,  15,  15]],  // vivid red    — clearly low
-      [0.55, [255,  85,   0]],  // red-orange   — below median
-      [0.75, [255, 175,  60]],  // warm orange  — above median
-      [1.00, [255, 248, 235]],  // near-white   — top counties blaze bright
+      [0.00, [250, 240, 232]],  // near-white   — lowest opportunity, soft & pale
+      [0.28, [255, 195, 125]],  // peach-orange — low-medium
+      [0.52, [255, 105,  15]],  // vivid orange — midpoint
+      [0.75, [215,  18,  18]],  // vivid red    — above median
+      [1.00, [130,   5,  10]],  // deep crimson — top counties, richest red
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -363,7 +363,7 @@
       <h3>3D Mobility Map</h3>
       <p class="subtitle">
         Each column = one U.S. county. <strong>Height & color = upward mobility</strong>
-        for children of poor parents (1992 cohort). Tallest &amp; brightest (white) = most opportunity; deep red = least.
+        for children of poor parents (1992 cohort). Tallest &amp; deepest red = most opportunity; short white = least.
         {#if geoState && !focusedState}
           <span class="geo-hint">Detected your state: <em>{geoState}</em> — zooming in…</span>
         {/if}
