@@ -422,11 +422,11 @@
 
 <style>
     :global(body) {
-        background: #F4EFE6;
+        background: #0D0D0D;
         margin: 0;
     }
     .layout {
-        background: #F4EFE6;
+        background: #0D0D0D;
         display: flex;
         width: 100%;
     }
@@ -452,7 +452,6 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        min-height: 100vh;
     }
     /* 3D map — fixed height so canvas doesn't leave empty space below */
     .hero-3d {
@@ -504,7 +503,7 @@
     }
     .hero-legend {
         font-size: 0.72rem;
-        color: #4A4240;
+        color: #6B6259;
         letter-spacing: 0.03em;
     }
     .legend-cold { color: #5B8FFF; font-weight: 700; }
@@ -514,18 +513,15 @@
         align-items: center;
         gap: 0.4rem;
         font-size: 0.72rem;
-        color: #3A3230;
+        color: #5A5250;
         animation: bounceDown 1.8s ease-in-out infinite;
     }
-    /* ── Gradient bridge: hero black → content cream ── */
-    .hero-bridge {
-        height: 80px;
-        background: linear-gradient(to bottom, #0A0A0A, #F4EFE6);
-    }
+    /* Bridge is now same colour as everything — zero height */
+    .hero-bridge { display: none; }
 
     .subtitle {
         font-size: 1.1rem;
-        color: #5e6f77;
+        color: #6B6259;
         margin-top: 0.3rem;
     }
 
@@ -533,7 +529,7 @@
         margin-top: 1rem;
         max-width: 36ch;
         font-size: 0.95rem;
-        color: #5e6f77;
+        color: #6B6259;
         line-height: 1.45;
         font-weight: 500;
     }
@@ -554,14 +550,14 @@
 
     .footer h2 {
         font-size: 2rem;
-        color: #1F1B16;
+        color: #E8E0D5;
         margin-bottom: 0.5rem;
     }
 
     .footer p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #3D3128;
+        color: #8A8278;
         max-width: 40ch;
     }
 
@@ -636,29 +632,29 @@
 
     .narration-card h2 {
         font-size: 1.6rem;
-        color: #1F1B16;
+        color: #E8E0D5;
         margin-bottom: 0.4rem;
     }
 
     .narration-card p {
         font-size: 1.1rem;
         line-height: 1.5;
-        color: #3D3128;
+        color: #8A8278;
     }
 
     .step h2 {
         font-size: 2rem;
-        color: #1F1B16;
+        color: #E8E0D5;
     }
 
     .step.active h2 {
-        color: #B5533C;  /* terracotta accent on active step */
+        color: #D67A5C;  /* lighter terracotta — readable on dark bg */
     }
 
     .step p {
         font-size: 1.25rem;
         line-height: 1.6;
-        color: #3D3128;
+        color: #8A8278;
     }
 
     /* ── Scroll guide after auto-play ── */
@@ -677,7 +673,7 @@
     .scroll-guide-line {
         width: 1px;
         height: 40px;
-        background: #D9D0C2;
+        background: #2A2018;
         margin: 0 auto 1rem;
     }
 
@@ -746,8 +742,8 @@
 
     .measure-pill {
         padding: 0.55rem 0.9rem;
-        background: rgba(36, 113, 163, 0.06);
-        border-left: 3px solid #2471A3;
+        background: rgba(181, 83, 60, 0.06);
+        border-left: 3px solid #B5533C;
         border-radius: 0 6px 6px 0;
     }
 
@@ -755,7 +751,7 @@
         display: block;
         font-size: 0.75rem;
         font-weight: 700;
-        color: #2471A3;
+        color: #D67A5C;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         margin-bottom: 0.2rem;
@@ -820,7 +816,7 @@
     }
     .play-hint {
         font-size: 0.85rem !important;
-        color: #7b8a8b !important;
+        color: #6B6259 !important;
         margin: 0 !important;
         max-width: 36ch;
     }
@@ -835,7 +831,7 @@
         align-items: center;
         gap: 0.55rem;
         font-size: 0.9rem;
-        color: #5e6f77;
+        color: #6B6259;
         font-weight: 500;
     }
     .play-status-dot {
@@ -888,7 +884,7 @@
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #94a3b8;
+        color: #6B6259;
     }
 
     /* ── Stat blocks ── */
@@ -927,8 +923,8 @@
         height: 100vh;
         display: grid;
         place-items: center;
-        background: #F4EFE6;
-        border-left: 1px solid #D9D0C2;
+        background: #0D0D0D;
+        border-left: 1px solid #1E1814;
         padding: 1rem;
         overflow: hidden;
     }
@@ -941,8 +937,8 @@
         font-size: 0.8rem;
         line-height: 1.35;
         color: #6B6259;
-        background: rgba(244, 239, 230, 0.92);
-        border: 1px solid #D9D0C2;
+        background: rgba(13, 13, 13, 0.92);
+        border: 1px solid #2A2018;
         border-radius: 8px;
         padding: 0.55rem 0.7rem;
         z-index: 5;
