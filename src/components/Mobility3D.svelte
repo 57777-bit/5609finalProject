@@ -23,19 +23,41 @@
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
+  // State name → 2-letter code (for flagcdn.com flag images)
+  const STATE_ABBR = {
+    'Alabama':'al','Alaska':'ak','Arizona':'az','Arkansas':'ar',
+    'California':'ca','Colorado':'co','Connecticut':'ct','Delaware':'de',
+    'Florida':'fl','Georgia':'ga','Hawaii':'hi','Idaho':'id',
+    'Illinois':'il','Indiana':'in','Iowa':'ia','Kansas':'ks',
+    'Kentucky':'ky','Louisiana':'la','Maine':'me','Maryland':'md',
+    'Massachusetts':'ma','Michigan':'mi','Minnesota':'mn','Mississippi':'ms',
+    'Missouri':'mo','Montana':'mt','Nebraska':'ne','Nevada':'nv',
+    'New Hampshire':'nh','New Jersey':'nj','New Mexico':'nm','New York':'ny',
+    'North Carolina':'nc','North Dakota':'nd','Ohio':'oh','Oklahoma':'ok',
+    'Oregon':'or','Pennsylvania':'pa','Rhode Island':'ri','South Carolina':'sc',
+    'South Dakota':'sd','Tennessee':'tn','Texas':'tx','Utah':'ut',
+    'Vermont':'vt','Virginia':'va','Washington':'wa','West Virginia':'wv',
+    'Wisconsin':'wi','Wyoming':'wy',
+  };
+
+  function stateFlagUrl(name) {
+    const code = STATE_ABBR[name];
+    return code ? `https://flagcdn.com/us-${code}.svg` : null;
+  }
+
   function opportunityColor(t) {
-    // Plasma-inspired palette designed for dark backgrounds:
-    // low-opportunity columns recede into the dark; high-opportunity columns
-    // climb through purple → magenta → amber → bright gold and literally glow.
-    // Perceptually uniform: every step feels equally "more opportunity".
-    if (t <= 0) return [13, 8, 135];
-    if (t >= 1) return [240, 235, 65];
+    // Inferno palette — designed for dark backgrounds, no jarring hue jumps.
+    // Black/purple base means low counties dissolve into the dark bg.
+    // Orange → amber → pale gold at the top gives a warm "glowing" feel.
+    if (t <= 0) return [10, 5, 25];
+    if (t >= 1) return [255, 248, 200];
     const stops = [
-      [0.00, [ 13,   8, 135]],  // deep indigo  — blends into black bg, ominous
-      [0.25, [130,  15, 185]],  // vivid purple — clearly low but visible
-      [0.50, [220,  50, 120]],  // hot magenta  — midpoint drama
-      [0.75, [255, 145,  10]],  // amber-orange — above median, warming up
-      [1.00, [240, 235,  65]],  // bright gold  — top counties blaze like sunlight
+      [0.00, [ 10,   5,  25]],  // near-black   — dissolves into dark bg
+      [0.20, [ 90,  15, 100]],  // dark purple  — clearly "low" but visible
+      [0.42, [185,  25,  55]],  // deep crimson — below median
+      [0.65, [240,  85,  20]],  // vivid orange — above median, warming
+      [0.83, [255, 185,  40]],  // warm amber   — high opportunity
+      [1.00, [255, 248, 200]],  // pale gold    — peak counties glow softly
     ];
     let i = 0;
     while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
@@ -118,7 +140,7 @@
     function rgbaFor(v, active = true) {
       const t = Math.max(0, Math.min(1, (v - lo) / range));
       const [r, g, b] = opportunityColor(t);
-      return [r, g, b, active ? 245 : 35];
+      return [r, g, b, active ? 245 : 0];   // 0 = fully hide unfocused counties
     }
 
     // ── Per-state statistics ──────────────────────────────────────────────────
@@ -172,11 +194,11 @@
       }
     }
 
-    // ── Lighting (neutral-cool to preserve plasma hues) ───────────────────────
+    // ── Lighting (warm — complements Inferno orange/amber tones) ─────────────
     const lighting = new LightingEffect({
-      ambient:  new AmbientLight({ color: [210, 215, 255], intensity: 0.40 }),
-      dir1: new DirectionalLight({ color: [255, 255, 245], intensity: 1.80, direction: [-1, -2, -1] }),
-      dir2: new DirectionalLight({ color: [180, 180, 255], intensity: 0.45, direction: [ 3,  1, -1] }),
+      ambient:  new AmbientLight({ color: [255, 200, 160], intensity: 0.45 }),
+      dir1: new DirectionalLight({ color: [255, 165, 100], intensity: 2.0,  direction: [-1, -2, -1] }),
+      dir2: new DirectionalLight({ color: [120,  80,  50], intensity: 0.75, direction: [ 3,  1, -1] }),
     });
 
     // ── Layer factory ─────────────────────────────────────────────────────────
@@ -191,8 +213,8 @@
           getColor: d => f == null
             ? [180, 180, 200, 80]
             : d.name === f
-              ? [255, 100, 40, 255]   // terracotta highlight on focused state
-              : [60, 60, 70, 40],
+              ? [255, 120, 50, 255]   // terracotta highlight on focused state
+              : [0, 0, 0, 0],         // fully hidden when another state is focused
           getWidth: d => (f != null && d.name === f) ? 2.5 : 1,
           widthUnits: 'pixels',
           updateTriggers: { getColor: f, getWidth: f },
@@ -364,7 +386,7 @@
       <h3>3D Mobility Map</h3>
       <p class="subtitle">
         Each column = one U.S. county. <strong>Height & color = upward mobility</strong>
-        for children of poor parents (1992 cohort). Indigo = least opportunity → purple → magenta → gold = most.
+        for children of poor parents (1992 cohort). Dark = least → orange → gold = most opportunity.
         {#if geoState && !focusedState}
           <span class="geo-hint">Detected your state: <em>{geoState}</em> — zooming in…</span>
         {/if}
@@ -402,7 +424,12 @@
     <!-- State comparison panel -->
     {#if focusedState && stateStats.has(focusedState)}
       {@const s = stateStats.get(focusedState)}
+      {@const flagUrl = stateFlagUrl(focusedState)}
       <div class="compare-panel">
+        {#if flagUrl}
+          <img class="state-flag" src={flagUrl} alt="{focusedState} flag"
+               onerror={e => { e.currentTarget.style.display = 'none'; }} />
+        {/if}
         <div class="compare-state">{focusedState}</div>
         <div class="compare-rank">#{s.rank} <span class="of-50">of 50 states</span></div>
         <div class="compare-stat">
@@ -533,6 +560,16 @@
     min-width: 180px;
     backdrop-filter: blur(4px);
     pointer-events: none;
+  }
+  .state-flag {
+    display: block;
+    width: 100%;
+    max-width: 148px;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    object-fit: cover;
   }
   .compare-state {
     font-size: 1.0rem;
